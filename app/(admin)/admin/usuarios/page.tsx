@@ -6,6 +6,7 @@ import { teamLabel, teamColor } from "@/lib/utils/helpers";
 import toast from "react-hot-toast";
 import type { User } from "@/types";
 import { ShieldCheck, ShieldOff, Trophy } from "lucide-react";
+import Loading from "@/components/loading";
 
 export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -17,13 +18,17 @@ export default function AdminUsuariosPage() {
     setLoading(false);
   };
 
-  useEffect(() => { loadUsers(); }, []);
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const handleToggleRole = async (user: User) => {
     const newRole = user.role === "admin" ? "user" : "admin";
     try {
       await setUserRole(user.uid, newRole);
-      toast.success(`${user.name} agora é ${newRole === "admin" ? "administrador" : "usuário"}`);
+      toast.success(
+        `${user.name} agora é ${newRole === "admin" ? "administrador" : "usuário"}`,
+      );
       loadUsers();
     } catch (e: any) {
       toast.error(e.message);
@@ -33,12 +38,16 @@ export default function AdminUsuariosPage() {
   return (
     <div className="animate-fade-in">
       <div className="mb-8">
-        <h1 className="font-display text-4xl text-gradient tracking-wide">USUÁRIOS</h1>
-        <p className="text-coal-400 text-sm mt-1">{users.length} usuários cadastrados</p>
+        <h1 className="font-display text-4xl text-gradient tracking-wide">
+          USUÁRIOS
+        </h1>
+        <p className="text-coal-400 text-sm mt-1">
+          {users.length} usuários cadastrados
+        </p>
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-coal-500">Carregando...</div>
+        <Loading />
       ) : (
         <div className="card overflow-hidden">
           <div className="p-4 border-b border-coal-700 grid grid-cols-12 text-xs text-coal-500 font-semibold uppercase tracking-wider">
@@ -50,14 +59,21 @@ export default function AdminUsuariosPage() {
           {users.map((u) => {
             const color = teamColor(u.team);
             return (
-              <div key={u.uid} className="p-4 grid grid-cols-12 items-center border-b border-coal-700/50 hover:bg-coal-800/50 transition-all">
+              <div
+                key={u.uid}
+                className="p-4 grid grid-cols-12 items-center border-b border-coal-700/50 hover:bg-coal-800/50 transition-all"
+              >
                 <div className="col-span-5 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
-                    style={{ background: color + "30", color }}>
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+                    style={{ background: color + "30", color }}
+                  >
                     {u.name.charAt(0)}
                   </div>
                   <div>
-                    <div className="font-medium text-coal-100 text-sm">{u.name}</div>
+                    <div className="font-medium text-coal-100 text-sm">
+                      {u.name}
+                    </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       {u.role === "admin" && (
                         <span className="text-amber-400 text-xs flex items-center gap-0.5">
@@ -68,7 +84,9 @@ export default function AdminUsuariosPage() {
                     </div>
                   </div>
                 </div>
-                <div className="col-span-3 text-sm" style={{ color }}>{teamLabel(u.team)}</div>
+                <div className="col-span-3 text-sm" style={{ color }}>
+                  {teamLabel(u.team)}
+                </div>
                 <div className="col-span-2 text-center">
                   <span className="font-bold text-coal-100">{u.points}</span>
                   <span className="text-coal-500 text-xs ml-1">pts</span>
@@ -83,9 +101,13 @@ export default function AdminUsuariosPage() {
                     }`}
                   >
                     {u.role === "admin" ? (
-                      <span className="flex items-center gap-1"><ShieldOff size={11} /> Remover</span>
+                      <span className="flex items-center gap-1">
+                        <ShieldOff size={11} /> Remover
+                      </span>
                     ) : (
-                      <span className="flex items-center gap-1"><ShieldCheck size={11} /> Admin</span>
+                      <span className="flex items-center gap-1">
+                        <ShieldCheck size={11} /> Admin
+                      </span>
                     )}
                   </button>
                 </div>

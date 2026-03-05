@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
+import Loading from "@/components/loading";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -14,14 +15,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-coal-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse-slow">🎲</div>
-          <p className="text-coal-400 text-sm">Carregando...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!user) return null;

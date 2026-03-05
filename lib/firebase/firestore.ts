@@ -5,9 +5,9 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
-  where,
   onSnapshot,
   arrayUnion,
   increment,
@@ -38,6 +38,14 @@ export async function createGame(dto: CreateGameDTO, createdBy: string): Promise
   return ref.id;
 }
 
+export async function updateGame(gameId: string, dto: Partial<CreateGameDTO>): Promise<void> {
+  await updateDoc(doc(db, "games", gameId), { ...dto });
+}
+
+export async function deleteGame(gameId: string): Promise<void> {
+  await deleteDoc(doc(db, "games", gameId));
+}
+
 export async function getGames(): Promise<Game[]> {
   const snap = await getDocs(query(collection(db, "games"), orderBy("createdAt", "desc")));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Game));
@@ -48,10 +56,6 @@ export function subscribeGames(callback: (games: Game[]) => void): Unsubscribe {
     query(collection(db, "games"), orderBy("createdAt", "desc")),
     (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Game)))
   );
-}
-
-export async function deleteGame(gameId: string): Promise<void> {
-  await updateDoc(doc(db, "games", gameId), { deleted: true });
 }
 
 // ── MATCHES ──────────────────────────────────────────────────────────────────
@@ -67,6 +71,29 @@ export async function createMatch(dto: CreateMatchDTO, createdBy: string): Promi
     finishedAt: null,
   });
   return ref.id;
+}
+
+export async function deleteMatch(matchId: string, revertPoints: boolean = false): Promise<void> {
+  if (revertPoints) {
+    const matchSnap = await getDoc(doc(db, "matches", matchId));
+    if (matchSnap.exists()) {
+      const match = matchSnap.data() as Match;
+      if (match.status === "finished" && match.winners.length > 0) {
+        const batch = writeBatch(db);
+        for (const uid of match.winners) {
+          const userSnap = await getDoc(doc(db, "users", uid));
+          if (!userSnap.exists()) continue;
+          const user = userSnap.data() as User;
+          batch.update(doc(db, "users", uid), { points: increment(-1), wins: increment(-1) });
+          batch.update(doc(db, "teams", user.team), { points: increment(-1), wins: increment(-1) });
+        }
+        batch.delete(doc(db, "matches", matchId));
+        await batch.commit();
+        return;
+      }
+    }
+  }
+  await deleteDoc(doc(db, "matches", matchId));
 }
 
 export async function joinMatch(matchId: string, uid: string): Promise<void> {

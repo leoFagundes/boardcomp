@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { formatDate, statusLabel } from "@/lib/utils/helpers";
 import { Users, Clock, Swords, CheckCircle, Plus } from "lucide-react";
 import type { MatchStatus } from "@/types";
+import Loading from "@/components/loading";
 
 const filters: { value: MatchStatus | "all"; label: string }[] = [
   { value: "all", label: "Todos" },
@@ -25,7 +26,8 @@ export default function JogosPage() {
 
   if (!user) return null;
 
-  const filtered = filter === "all" ? matches : matches.filter((m) => m.status === filter);
+  const filtered =
+    filter === "all" ? matches : matches.filter((m) => m.status === filter);
 
   const handleJoin = async (matchId: string) => {
     setActionLoading(matchId);
@@ -51,17 +53,29 @@ export default function JogosPage() {
     }
   };
 
-  const statusIcon = (s: string) => s === "waiting" ? <Clock size={14} /> : s === "active" ? <Swords size={14} /> : <CheckCircle size={14} />;
+  const statusIcon = (s: string) =>
+    s === "waiting" ? (
+      <Clock size={14} />
+    ) : s === "active" ? (
+      <Swords size={14} />
+    ) : (
+      <CheckCircle size={14} />
+    );
 
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display text-4xl text-gradient tracking-wide">PARTIDAS</h1>
+          <h1 className="font-display text-4xl text-gradient tracking-wide">
+            PARTIDAS
+          </h1>
           <p className="text-coal-400 text-sm mt-1">Inscreva-se e compete</p>
         </div>
         {user.role === "admin" && (
-          <Link href="/admin/partidas" className="btn-primary flex items-center gap-2 self-start">
+          <Link
+            href="/admin/partidas"
+            className="btn-primary flex items-center gap-2 self-start"
+          >
             <Plus size={16} />
             Nova Partida
           </Link>
@@ -82,14 +96,18 @@ export default function JogosPage() {
           >
             {f.label}
             <span className="ml-2 text-xs opacity-60">
-              ({f.value === "all" ? matches.length : matches.filter((m) => m.status === f.value).length})
+              (
+              {f.value === "all"
+                ? matches.length
+                : matches.filter((m) => m.status === f.value).length}
+              )
             </span>
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-coal-500">Carregando...</div>
+        <Loading />
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
           <div className="text-5xl mb-4">🎲</div>
@@ -103,13 +121,21 @@ export default function JogosPage() {
             const isLoading = actionLoading === match.id;
 
             return (
-              <div key={match.id} className="card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div
+                key={match.id}
+                className="card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+              >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <Link href={`/jogos/${match.id}`} className="font-bold text-coal-100 hover:text-amber-400 transition-colors text-lg">
+                    <Link
+                      href={`/jogos/${match.id}`}
+                      className="font-bold text-coal-100 hover:text-amber-400 transition-colors text-lg"
+                    >
                       {match.gameName}
                     </Link>
-                    <span className={`badge-${match.status} flex items-center gap-1`}>
+                    <span
+                      className={`badge-${match.status} flex items-center gap-1`}
+                    >
                       {statusIcon(match.status)}
                       {statusLabel(match.status)}
                     </span>
@@ -133,11 +159,14 @@ export default function JogosPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Link href={`/jogos/${match.id}`} className="btn-secondary text-sm">
+                  <Link
+                    href={`/jogos/${match.id}`}
+                    className="btn-secondary text-sm"
+                  >
                     Detalhes
                   </Link>
-                  {match.status === "waiting" && (
-                    isIn ? (
+                  {match.status === "waiting" &&
+                    (isIn ? (
                       <button
                         onClick={() => handleLeave(match.id)}
                         disabled={isLoading}
@@ -153,8 +182,7 @@ export default function JogosPage() {
                       >
                         {isLoading ? "..." : "Inscrever-se"}
                       </button>
-                    )
-                  )}
+                    ))}
                 </div>
               </div>
             );
