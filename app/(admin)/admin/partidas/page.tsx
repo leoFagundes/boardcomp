@@ -1,0 +1,120 @@
+"use client";
+
+import { useState } from "react";
+import { useMatches } from "@/lib/hooks/useMatches";
+import { useGames } from "@/lib/hooks/useGames";
+import { useAuth } from "@/context/AuthContext";
+import { createMatch } from "@/lib/firebase/firestore";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import { formatDate, statusLabel } from "@/lib/utils/helpers";
+import { Plus, Users, X } from "lucide-react";
+
+export default function AdminPartidasPage() {
+  const { user } = useAuth();
+  const { matches, loading } = useMatches();
+  const { games } = useGames();
+  const [showForm, setShowForm] = useState(false);
+  const [selectedGameId, setSelectedGameId] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  const selectedGame = games.find((g) => g.id === selectedGameId);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGame || !user) return;
+    setCreating(true);
+    try {
+      await createMatch({ gameId: selectedGame.id, gameName: selectedGame.name }, user.uid);
+      toast.success("Partida criada!");
+      setShowForm(false);
+      setSelectedGameId("");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="animate-fade-in">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-display text-4xl text-gradient tracking-wide">PARTIDAS</h1>
+          <p className="text-coal-400 text-sm mt-1">{matches.length} partidas no total</p>
+        </div>
+        <button onClick={() => setShowForm(!showForm)} className="btn-primary flex items-center gap-2">
+          {showForm ? <X size={16} /> : <Plus size={16} />}
+          {showForm ? "Fechar" : "Nova Partida"}
+        </button>
+      </div>
+
+      {/* Create match form */}
+      {showForm && (
+        <div className="card p-6 mb-6 animate-slide-up border-amber-500/30">
+          <h2 className="font-bold text-coal-100 mb-4">Criar Nova Partida</h2>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div>
+              <label className="label">Selecionar Jogo *</label>
+              <select
+                className="input"
+                value={selectedGameId}
+                onChange={(e) => setSelectedGameId(e.target.value)}
+                required
+              >
+                <option value="">Escolha um jogo...</option>
+                {games.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name} ({g.minPlayers}–{g.maxPlayers} jogadores)
+                  </option>
+                ))}
+              </select>
+            </div>
+            {selectedGame && (
+              <div className="p-3 rounded-lg bg-coal-800 border border-coal-700 text-sm">
+                <div className="font-medium text-coal-200">{selectedGame.name}</div>
+                {selectedGame.description && (
+                  <div className="text-coal-400 mt-1">{selectedGame.description}</div>
+                )}
+                <div className="text-coal-500 mt-1">
+                  {selectedGame.minPlayers}–{selectedGame.maxPlayers} jogadores
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">Cancelar</button>
+              <button type="submit" disabled={creating || !selectedGameId} className="btn-primary flex-1">
+                {creating ? "Criando..." : "Criar Partida"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-20 text-coal-500">Carregando...</div>
+      ) : (
+        <div className="grid gap-3">
+          {matches.map((match) => (
+            <div key={match.id} className="card p-4 flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-coal-100">{match.gameName}</span>
+                  <span className={`badge-${match.status}`}>{statusLabel(match.status)}</span>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-xs text-coal-500">
+                  <span className="flex items-center gap-1"><Users size={11} /> {match.players.length} inscritos</span>
+                  {match.winners.length > 0 && <span>🏆 {match.winners.length} vencedor(es)</span>}
+                  <span>{formatDate(match.createdAt)}</span>
+                </div>
+              </div>
+              <Link href={`/jogos/${match.id}`} className="btn-secondary text-sm shrink-0">
+                Ver detalhes
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
