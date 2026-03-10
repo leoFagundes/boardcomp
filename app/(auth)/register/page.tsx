@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -8,32 +8,44 @@ import { useAuth } from "@/context/AuthContext";
 import type { Team } from "@/types";
 
 export default function RegisterPage() {
-  const { signUp } = useAuth();
+  const { signUp, user, loading } = useAuth();
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [team, setTeam] = useState<Team | "">("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Se já está logado, redireciona direto
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!team) { toast.error("Escolha uma equipe"); return; }
-    setLoading(true);
+    if (!team) {
+      toast.error("Escolha uma equipe");
+      return;
+    }
+    setSubmitting(true);
     try {
       await signUp({ name, email, password, team: team as Team });
       toast.success("Conta criada! Bem-vindo à competição!");
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar conta");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const teams = [
-    { id: "antigos", label: "Funcionários Antigos", emoji: "🏅", color: "amber" },
-    { id: "novos", label: "Funcionários Novos", emoji: "⚡", color: "blue" },
+    { id: "antigos", label: "Funcionários Antigos", emoji: "🏅" },
+    { id: "novos", label: "Funcionários Atuais", emoji: "⚡" },
   ] as const;
 
   return (
@@ -76,7 +88,6 @@ export default function RegisterPage() {
             required
           />
         </div>
-
         <div>
           <label className="label">Escolha sua equipe</label>
           <div className="grid grid-cols-2 gap-3">
@@ -94,20 +105,28 @@ export default function RegisterPage() {
                 }`}
               >
                 <div className="text-2xl mb-1">{t.emoji}</div>
-                <div className="text-xs font-semibold leading-tight">{t.label}</div>
+                <div className="text-xs font-semibold leading-tight">
+                  {t.label}
+                </div>
               </button>
             ))}
           </div>
         </div>
-
-        <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
-          {loading ? "Criando conta..." : "Criar conta"}
+        <button
+          type="submit"
+          className="btn-primary w-full mt-2"
+          disabled={submitting}
+        >
+          {submitting ? "Criando conta..." : "Criar conta"}
         </button>
       </form>
 
       <p className="text-center text-coal-400 text-sm mt-6">
         Já tem conta?{" "}
-        <Link href="/login" className="text-amber-400 hover:text-amber-300 font-medium">
+        <Link
+          href="/login"
+          className="text-amber-400 hover:text-amber-300 font-medium"
+        >
           Entrar
         </Link>
       </p>

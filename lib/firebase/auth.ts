@@ -3,14 +3,24 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   type User as FirebaseUser,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./config";
 import type { RegisterDTO, User } from "@/types";
 
+// Garante persistência local por padrão (sobrevive fechar o navegador)
+setPersistence(auth, browserLocalPersistence).catch(() => {});
+
 export async function registerUser(dto: RegisterDTO): Promise<User> {
-  const credential = await createUserWithEmailAndPassword(auth, dto.email, dto.password);
+  const credential = await createUserWithEmailAndPassword(
+    auth,
+    dto.email,
+    dto.password,
+  );
   const { uid } = credential.user;
 
   const userData: User = {
@@ -26,15 +36,19 @@ export async function registerUser(dto: RegisterDTO): Promise<User> {
 
   await setDoc(doc(db, "users", uid), userData);
 
-  // Increment team member count
   const teamRef = doc(db, "teams", dto.team);
   const teamSnap = await getDoc(teamRef);
   if (teamSnap.exists()) {
-    await setDoc(teamRef, { memberCount: (teamSnap.data().memberCount || 0) + 1 }, { merge: true });
+    await setDoc(
+      teamRef,
+      { memberCount: (teamSnap.data().memberCount || 0) + 1 },
+      { merge: true },
+    );
   } else {
     await setDoc(teamRef, {
       id: dto.team,
-      name: dto.team === "antigos" ? "Funcionários Antigos" : "Funcionários Novos",
+      name:
+        dto.team === "antigos" ? "Funcionários Antigos" : "Funcionários Atuais",
       points: 0,
       wins: 0,
       memberCount: 1,
@@ -44,11 +58,18 @@ export async function registerUser(dto: RegisterDTO): Promise<User> {
   return userData;
 }
 
-export async function loginUser(email: string, password: string): Promise<void> {
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<void> {
   await signInWithEmailAndPassword(auth, email, password);
 }
 
 export async function logoutUser(): Promise<void> {
+  // Muda para persistência de sessão antes de sair,
+  // garantindo que ao fazer login novamente não fique salvo
+  // até o usuário marcar "lembrar de mim" (comportamento padrão limpo)
+  await setPersistence(auth, browserLocalPersistence);
   await firebaseSignOut(auth);
 }
 

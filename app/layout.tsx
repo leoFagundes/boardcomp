@@ -5,10 +5,14 @@ import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "BoardComp — Competição de Jogos de Tabuleiro",
-  description: "Plataforma de competição entre Funcionários Antigos e Novos",
+  description: "Plataforma de competição entre Funcionários Antigos e Atuais",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="pt-BR">
       <body>
@@ -24,8 +28,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 borderRadius: "10px",
                 fontFamily: "'DM Sans', sans-serif",
               },
-              success: { iconTheme: { primary: "#F59E0B", secondary: "#0A0A0A" } },
-              error: { iconTheme: { primary: "#EF4444", secondary: "#0A0A0A" } },
+              success: {
+                iconTheme: { primary: "#F59E0B", secondary: "#0A0A0A" },
+              },
+              error: {
+                iconTheme: { primary: "#EF4444", secondary: "#0A0A0A" },
+              },
             }}
           />
         </AuthProvider>

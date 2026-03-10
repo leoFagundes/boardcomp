@@ -1,6 +1,6 @@
 # BoardComp 🎲
 
-Plataforma de competição de jogos de tabuleiro entre **Funcionários Antigos** e **Funcionários Novos**.
+Plataforma de competição de jogos de tabuleiro entre **Funcionários Antigos** e **Funcionários Atuais**.
 
 ## Stack
 
@@ -78,7 +78,7 @@ Coleção `teams`, documentos:
 // teams/novos
 {
   "id": "novos",
-  "name": "Funcionários Novos",
+  "name": "Funcionários Atuais",
   "points": 0,
   "wins": 0,
   "memberCount": 0
@@ -130,22 +130,22 @@ boardcomp/
 
 ## Funcionalidades
 
-| Funcionalidade | Status |
-|---|---|
-| Cadastro e login | ✅ |
-| Escolha de equipe no cadastro | ✅ |
-| Cadastro de jogos (admin) | ✅ |
-| Criação de partidas (admin) | ✅ |
-| Inscrição em partidas | ✅ |
-| Ativação automática ao atingir mínimo | ✅ |
-| Registro de resultados com múltiplos vencedores | ✅ |
-| +1 ponto individual por vitória | ✅ |
-| +1 ponto para equipe por vitória | ✅ |
-| Ranking individual em tempo real | ✅ |
-| Ranking por equipe em tempo real | ✅ |
-| Painel com jogos aguardando/em andamento/finalizados | ✅ |
-| Gerenciamento de usuários (admin) | ✅ |
-| Promoção de usuários a admin | ✅ |
+| Funcionalidade                                       | Status |
+| ---------------------------------------------------- | ------ |
+| Cadastro e login                                     | ✅     |
+| Escolha de equipe no cadastro                        | ✅     |
+| Cadastro de jogos (admin)                            | ✅     |
+| Criação de partidas (admin)                          | ✅     |
+| Inscrição em partidas                                | ✅     |
+| Ativação automática ao atingir mínimo                | ✅     |
+| Registro de resultados com múltiplos vencedores      | ✅     |
+| +1 ponto individual por vitória                      | ✅     |
+| +1 ponto para equipe por vitória                     | ✅     |
+| Ranking individual em tempo real                     | ✅     |
+| Ranking por equipe em tempo real                     | ✅     |
+| Painel com jogos aguardando/em andamento/finalizados | ✅     |
+| Gerenciamento de usuários (admin)                    | ✅     |
+| Promoção de usuários a admin                         | ✅     |
 
 ---
 
@@ -156,4 +156,4 @@ boardcomp/
 - Pode haver **múltiplos vencedores** por partida
 - Apenas **admins** podem cadastrar jogos, criar partidas e registrar resultados
 - Usuários só podem sair de partidas com status **"aguardando"**
-"# boardcomp" 
+  "# boardcomp"

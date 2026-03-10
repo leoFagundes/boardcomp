@@ -18,7 +18,7 @@ export function formatDate(date: any): string {
 }
 
 export function teamLabel(team: string): string {
-  return team === "antigos" ? "Funcionários Antigos" : "Funcionários Novos";
+  return team === "antigos" ? "Funcionários Antigos" : "Funcionários Atuais";
 }
 
 export function teamColor(team: string): string {

@@ -5,8 +5,7 @@ import { getUsers, setUserRole } from "@/lib/firebase/firestore";
 import { teamLabel, teamColor } from "@/lib/utils/helpers";
 import toast from "react-hot-toast";
 import type { User } from "@/types";
-import { ShieldCheck, ShieldOff, Trophy } from "lucide-react";
-import Loading from "@/components/loading";
+import { ShieldCheck, ShieldOff } from "lucide-react";
 
 export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -47,69 +46,133 @@ export default function AdminUsuariosPage() {
       </div>
 
       {loading ? (
-        <Loading />
+        <div className="text-center py-20 text-coal-500">Carregando...</div>
       ) : (
         <div className="card overflow-hidden">
-          <div className="p-4 border-b border-coal-700 grid grid-cols-12 text-xs text-coal-500 font-semibold uppercase tracking-wider">
+          {/* Desktop header */}
+          <div className="hidden sm:grid p-4 border-b border-coal-700 grid-cols-12 text-xs text-coal-500 font-semibold uppercase tracking-wider">
             <span className="col-span-5">Usuário</span>
             <span className="col-span-3">Equipe</span>
             <span className="col-span-2 text-center">Pontos</span>
             <span className="col-span-2 text-right">Ação</span>
           </div>
+
           {users.map((u) => {
             const color = teamColor(u.team);
             return (
               <div
                 key={u.uid}
-                className="p-4 grid grid-cols-12 items-center border-b border-coal-700/50 hover:bg-coal-800/50 transition-all"
+                className="border-b border-coal-700/50 hover:bg-coal-800/50 transition-all"
               >
-                <div className="col-span-5 flex items-center gap-3">
+                {/* ── Desktop row ── */}
+                <div className="hidden sm:grid p-4 grid-cols-12 items-center">
+                  <div className="col-span-5 flex items-center gap-3">
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+                      style={{ background: color + "30", color }}
+                    >
+                      {u.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-coal-100 text-sm truncate">
+                        {u.name}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        {u.role === "admin" && (
+                          <span className="text-amber-400 text-xs flex items-center gap-0.5">
+                            <ShieldCheck size={10} /> Admin
+                          </span>
+                        )}
+                        <span className="text-coal-500 text-xs truncate">
+                          {u.email}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                   <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+                    className="col-span-3 text-sm truncate"
+                    style={{ color }}
+                  >
+                    {teamLabel(u.team)}
+                  </div>
+                  <div className="col-span-2 text-center">
+                    <span className="font-bold text-coal-100">{u.points}</span>
+                    <span className="text-coal-500 text-xs ml-1">pts</span>
+                  </div>
+                  <div className="col-span-2 flex justify-end">
+                    <button
+                      onClick={() => handleToggleRole(u)}
+                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                        u.role === "admin"
+                          ? "text-red-400 border-red-400/30 hover:bg-red-400/10"
+                          : "text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
+                      }`}
+                    >
+                      {u.role === "admin" ? (
+                        <span className="flex items-center gap-1">
+                          <ShieldOff size={11} /> Remover
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <ShieldCheck size={11} /> Admin
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── Mobile card ── */}
+                <div className="sm:hidden p-4 flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0"
                     style={{ background: color + "30", color }}
                   >
                     {u.name.charAt(0)}
                   </div>
-                  <div>
-                    <div className="font-medium text-coal-100 text-sm">
-                      {u.name}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-medium text-coal-100 text-sm">
+                        {u.name}
+                      </span>
                       {u.role === "admin" && (
                         <span className="text-amber-400 text-xs flex items-center gap-0.5">
                           <ShieldCheck size={10} /> Admin
                         </span>
                       )}
-                      <span className="text-coal-500 text-xs">{u.email}</span>
+                    </div>
+                    <div className="text-xs mt-0.5" style={{ color }}>
+                      {teamLabel(u.team)}
+                    </div>
+                    <div className="text-coal-500 text-xs truncate">
+                      {u.email}
                     </div>
                   </div>
-                </div>
-                <div className="col-span-3 text-sm" style={{ color }}>
-                  {teamLabel(u.team)}
-                </div>
-                <div className="col-span-2 text-center">
-                  <span className="font-bold text-coal-100">{u.points}</span>
-                  <span className="text-coal-500 text-xs ml-1">pts</span>
-                </div>
-                <div className="col-span-2 flex justify-end">
-                  <button
-                    onClick={() => handleToggleRole(u)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
-                      u.role === "admin"
-                        ? "text-red-400 border-red-400/30 hover:bg-red-400/10"
-                        : "text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
-                    }`}
-                  >
-                    {u.role === "admin" ? (
-                      <span className="flex items-center gap-1">
-                        <ShieldOff size={11} /> Remover
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <div>
+                      <span className="font-bold text-coal-100 text-sm">
+                        {u.points}
                       </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <ShieldCheck size={11} /> Admin
-                      </span>
-                    )}
-                  </button>
+                      <span className="text-coal-500 text-xs ml-1">pts</span>
+                    </div>
+                    <button
+                      onClick={() => handleToggleRole(u)}
+                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                        u.role === "admin"
+                          ? "text-red-400 border-red-400/30 hover:bg-red-400/10"
+                          : "text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
+                      }`}
+                    >
+                      {u.role === "admin" ? (
+                        <span className="flex items-center gap-1">
+                          <ShieldOff size={11} /> Remover
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <ShieldCheck size={11} /> Dar admin
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             );

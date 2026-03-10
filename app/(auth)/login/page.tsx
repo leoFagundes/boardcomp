@@ -1,25 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const { signIn } = useAuth();
+  const { signIn, user, loading } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Se já está logado, redireciona direto
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, loading, router]);
+
+  // Enquanto verifica sessão, não renderiza nada
+  if (loading || user) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     try {
       await signIn(email, password);
       toast.success("Bem-vindo de volta!");
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err: any) {
       const msg =
         err.code === "auth/invalid-credential"
@@ -27,14 +37,16 @@ export default function LoginPage() {
           : err.message || "Erro ao entrar";
       toast.error(msg);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="card p-8 shadow-2xl animate-slide-up">
       <h2 className="text-2xl font-bold text-coal-100 mb-1">Entrar</h2>
-      <p className="text-coal-400 text-sm mb-6">Acesse sua conta para participar</p>
+      <p className="text-coal-400 text-sm mb-6">
+        Acesse sua conta para participar
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -59,14 +71,21 @@ export default function LoginPage() {
             required
           />
         </div>
-        <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
-          {loading ? "Entrando..." : "Entrar"}
+        <button
+          type="submit"
+          className="btn-primary w-full mt-2"
+          disabled={submitting}
+        >
+          {submitting ? "Entrando..." : "Entrar"}
         </button>
       </form>
 
       <p className="text-center text-coal-400 text-sm mt-6">
         Não tem conta?{" "}
-        <Link href="/register" className="text-amber-400 hover:text-amber-300 font-medium">
+        <Link
+          href="/register"
+          className="text-amber-400 hover:text-amber-300 font-medium"
+        >
           Cadastre-se
         </Link>
       </p>
