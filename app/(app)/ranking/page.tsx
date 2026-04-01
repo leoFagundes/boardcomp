@@ -11,7 +11,7 @@ const medals = ["🥇", "🥈", "🥉"];
 export default function RankingPage() {
   const { user } = useAuth();
   const { users, teams, loading } = useRanking();
-  const [tab, setTab] = useState<"individual" | "equipes">("individual");
+  const [tab, setTab] = useState<"individual" | "equipes">("equipes");
 
   const antigos = teams.find((t) => t.id === "antigos");
   const novos = teams.find((t) => t.id === "novos");
