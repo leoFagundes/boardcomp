@@ -21,6 +21,7 @@ export interface Game {
   description?: string;
   minPlayers: number;
   maxPlayers: number;
+  pointValue: number;
   createdBy: string;
   createdAt: Timestamp;
 }
@@ -29,6 +30,7 @@ export interface Match {
   id: string;
   gameId: string;
   gameName: string;
+  pointValue: number;
   status: MatchStatus;
   players: string[];
   winners: string[];
@@ -57,11 +59,13 @@ export interface CreateGameDTO {
   description?: string;
   minPlayers: number;
   maxPlayers: number;
+  pointValue: number;
 }
 
 export interface CreateMatchDTO {
   gameId: string;
   gameName: string;
+  pointValue: number;
 }
 
 export interface FinalizeMatchDTO {

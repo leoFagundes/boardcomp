@@ -69,7 +69,7 @@ Coleção `teams`, documentos:
 // teams/antigos
 {
   "id": "antigos",
-  "name": "Funcionários Antigos",
+  "name": "Brasilberg",
   "points": 0,
   "wins": 0,
   "memberCount": 0
@@ -78,7 +78,7 @@ Coleção `teams`, documentos:
 // teams/novos
 {
   "id": "novos",
-  "name": "Funcionários Atuais",
+  "name": "Hidromel",
   "points": 0,
   "wins": 0,
   "memberCount": 0

@@ -47,8 +47,7 @@ export async function registerUser(dto: RegisterDTO): Promise<User> {
   } else {
     await setDoc(teamRef, {
       id: dto.team,
-      name:
-        dto.team === "antigos" ? "Funcionários Antigos" : "Funcionários Atuais",
+      name: dto.team === "antigos" ? "Brasilberg" : "Hidromel",
       points: 0,
       wins: 0,
       memberCount: 1,

@@ -18,7 +18,7 @@ export function formatDate(date: any): string {
 }
 
 export function teamLabel(team: string): string {
-  return team === "antigos" ? "Funcionários Antigos" : "Funcionários Atuais";
+  return team === "antigos" ? "Brasilberg" : "Hidromel";
 }
 
 export function teamColor(team: string): string {

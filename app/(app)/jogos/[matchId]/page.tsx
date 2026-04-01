@@ -136,7 +136,7 @@ export default function MatchDetailPage({
               {statusLabel(match.status)}
             </span>
           </div>
-          {match.status === "waiting" &&
+          {match.status !== "finished" &&
             (isIn ? (
               <button
                 onClick={handleLeave}
@@ -145,7 +145,7 @@ export default function MatchDetailPage({
               >
                 {actionLoading ? "..." : "Sair da Partida"}
               </button>
-            ) : (
+            ) : match.status === "waiting" ? (
               <button
                 onClick={handleJoin}
                 disabled={actionLoading}
@@ -153,7 +153,12 @@ export default function MatchDetailPage({
               >
                 {actionLoading ? "..." : "Inscrever-se"}
               </button>
-            ))}
+            ) : null)}
+        </div>
+
+        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium">
+          <Trophy size={11} />
+          Vale {match.pointValue ?? 1} pt{(match.pointValue ?? 1) > 1 ? "s" : ""} por vitória
         </div>
 
         <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-coal-700">
@@ -204,7 +209,7 @@ export default function MatchDetailPage({
                   </div>
                 </div>
                 <span className="ml-auto text-amber-400 font-bold text-sm">
-                  +1 pt
+                  +{match.pointValue ?? 1} pt{(match.pointValue ?? 1) > 1 ? "s" : ""}
                 </span>
               </div>
             ))}

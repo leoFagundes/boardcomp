@@ -39,7 +39,7 @@ export default function RankingPage() {
         <div className="flex justify-between text-sm mb-3">
           <div>
             <span className="font-bold text-amber-400">
-              {antigos?.name || "Funcionários Antigos"}
+              {antigos?.name || "Brasilberg"}
             </span>
             <span className="text-coal-400 ml-2">
               {antigos?.points || 0} pts
@@ -47,7 +47,7 @@ export default function RankingPage() {
           </div>
           <div className="text-right">
             <span className="font-bold text-blue-400">
-              {novos?.name || "Funcionários Atuais"}
+              {novos?.name || "Hidromel"}
             </span>
             <span className="text-coal-400 ml-2">{novos?.points || 0} pts</span>
           </div>
@@ -71,33 +71,45 @@ export default function RankingPage() {
             return (
               <div
                 key={team.id}
-                className="rounded-xl p-4"
+                className="rounded-xl p-3 sm:p-4"
                 style={{
                   background: color + "10",
                   border: `1px solid ${color}30`,
                 }}
               >
-                <div className="font-bold mb-2" style={{ color }}>
+                <div
+                  className="font-bold mb-3 text-sm sm:text-base truncate"
+                  style={{ color }}
+                >
                   {team.name}
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-coal-100">
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-2 text-center">
+                  <div className="rounded-lg p-2 ">
+                    <div className="text-xl sm:text-2xl font-bold text-coal-100">
                       {team.points}
                     </div>
-                    <div className="text-xs text-coal-500">Pontos</div>
+                    <div className="text-[10px] sm:text-xs text-coal-500">
+                      Pontos
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-coal-100">
+
+                  <div className="rounded-lg p-2 ">
+                    <div className="text-xl sm:text-2xl font-bold text-coal-100">
                       {team.wins}
                     </div>
-                    <div className="text-xs text-coal-500">Vitórias</div>
+                    <div className="text-[10px] sm:text-xs text-coal-500">
+                      Vitórias
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-coal-100">
+
+                  <div className="rounded-lg p-2 ">
+                    <div className="text-xl sm:text-2xl font-bold text-coal-100">
                       {team.memberCount}
                     </div>
-                    <div className="text-xs text-coal-500">Membros</div>
+                    <div className="text-[10px] sm:text-xs text-coal-500">
+                      Membros
+                    </div>
                   </div>
                 </div>
               </div>

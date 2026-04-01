@@ -44,8 +44,8 @@ export default function RegisterPage() {
   };
 
   const teams = [
-    { id: "antigos", label: "Funcionários Antigos", emoji: "🏅" },
-    { id: "novos", label: "Funcionários Atuais", emoji: "⚡" },
+    { id: "antigos", label: "Brasilberg", emoji: "🏅" },
+    { id: "novos", label: "Hidromel", emoji: "⚡" },
   ] as const;
 
   return (

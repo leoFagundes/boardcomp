@@ -24,6 +24,7 @@ export default function AdminJogosPage() {
       description: game.description || "",
       minPlayers: game.minPlayers,
       maxPlayers: game.maxPlayers,
+      pointValue: game.pointValue ?? 1,
     });
   };
 
@@ -43,6 +44,7 @@ export default function AdminJogosPage() {
         description: editData.description || undefined,
         minPlayers: editData.minPlayers,
         maxPlayers: editData.maxPlayers,
+        pointValue: editData.pointValue ?? 1,
       });
       toast.success("Jogo atualizado!");
       setEditingId(null);
@@ -159,6 +161,25 @@ export default function AdminJogosPage() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <label className="label">Pontuação por vitória</label>
+                    <div className="flex gap-2 max-w-xs">
+                      {[1, 2, 3].map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setEditData({ ...editData, pointValue: v })}
+                          className={`flex-1 py-2 rounded-xl border text-sm font-bold transition-all ${
+                            (editData.pointValue ?? 1) === v
+                              ? "bg-amber-500/20 border-amber-500/50 text-amber-400"
+                              : "border-coal-600 text-coal-400 hover:border-coal-500 hover:text-coal-300"
+                          }`}
+                        >
+                          {v} pt{v > 1 ? "s" : ""}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleSave(game.id)}
@@ -216,6 +237,9 @@ export default function AdminJogosPage() {
                         <span className="flex items-center gap-1">
                           <Users size={12} /> {game.minPlayers}–
                           {game.maxPlayers} jogadores
+                        </span>
+                        <span className="text-amber-400/70 font-medium">
+                          {game.pointValue ?? 1} pt{(game.pointValue ?? 1) > 1 ? "s" : ""} por vitória
                         </span>
                         <span>{formatDate(game.createdAt)}</span>
                       </div>

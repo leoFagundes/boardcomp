@@ -165,7 +165,7 @@ export default function JogosPage() {
                   >
                     Detalhes
                   </Link>
-                  {match.status === "waiting" &&
+                  {match.status !== "finished" &&
                     (isIn ? (
                       <button
                         onClick={() => handleLeave(match.id)}
@@ -174,7 +174,7 @@ export default function JogosPage() {
                       >
                         {isLoading ? "..." : "Sair"}
                       </button>
-                    ) : (
+                    ) : match.status === "waiting" ? (
                       <button
                         onClick={() => handleJoin(match.id)}
                         disabled={isLoading}
@@ -182,7 +182,7 @@ export default function JogosPage() {
                       >
                         {isLoading ? "..." : "Inscrever-se"}
                       </button>
-                    ))}
+                    ) : null)}
                 </div>
               </div>
             );

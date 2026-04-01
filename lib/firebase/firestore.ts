@@ -79,13 +79,14 @@ export async function deleteMatch(matchId: string, revertPoints: boolean = false
     if (matchSnap.exists()) {
       const match = matchSnap.data() as Match;
       if (match.status === "finished" && match.winners.length > 0) {
+        const pts = match.pointValue ?? 1;
         const batch = writeBatch(db);
         for (const uid of match.winners) {
           const userSnap = await getDoc(doc(db, "users", uid));
           if (!userSnap.exists()) continue;
           const user = userSnap.data() as User;
-          batch.update(doc(db, "users", uid), { points: increment(-1), wins: increment(-1) });
-          batch.update(doc(db, "teams", user.team), { points: increment(-1), wins: increment(-1) });
+          batch.update(doc(db, "users", uid), { points: increment(-pts), wins: increment(-1) });
+          batch.update(doc(db, "teams", user.team), { points: increment(-pts), wins: increment(-1) });
         }
         batch.delete(doc(db, "matches", matchId));
         await batch.commit();
@@ -126,7 +127,7 @@ export async function leaveMatch(matchId: string, uid: string): Promise<void> {
   const matchSnap = await getDoc(matchRef);
   if (!matchSnap.exists()) throw new Error("Partida não encontrada");
   const match = matchSnap.data() as Match;
-  if (match.status !== "waiting") throw new Error("Não é possível sair de uma partida em andamento");
+  if (match.status === "finished") throw new Error("Não é possível sair de uma partida já finalizada");
 
   const newPlayers = match.players.filter((p) => p !== uid);
   await updateDoc(matchRef, { players: newPlayers });
@@ -134,10 +135,15 @@ export async function leaveMatch(matchId: string, uid: string): Promise<void> {
 
 export async function finalizeMatch(dto: FinalizeMatchDTO): Promise<void> {
   const { matchId, winnerIds } = dto;
+
+  const matchSnap = await getDoc(doc(db, "matches", matchId));
+  if (!matchSnap.exists()) throw new Error("Partida não encontrada");
+  const match = matchSnap.data() as Match;
+  const pts = match.pointValue ?? 1;
+
   const batch = writeBatch(db);
 
-  const matchRef = doc(db, "matches", matchId);
-  batch.update(matchRef, {
+  batch.update(doc(db, "matches", matchId), {
     status: "finished",
     winners: winnerIds,
     finishedAt: serverTimestamp(),
@@ -149,16 +155,80 @@ export async function finalizeMatch(dto: FinalizeMatchDTO): Promise<void> {
     const user = userSnap.data() as User;
 
     batch.update(doc(db, "users", uid), {
-      points: increment(1),
+      points: increment(pts),
       wins: increment(1),
     });
 
     batch.update(doc(db, "teams", user.team), {
-      points: increment(1),
+      points: increment(pts),
       wins: increment(1),
     });
   }
 
+  await batch.commit();
+}
+
+export async function editMatch(
+  matchId: string,
+  updates: {
+    gameId: string;
+    gameName: string;
+    pointValue: number;
+    status: string;
+    players: string[];
+    winners: string[];
+  }
+): Promise<void> {
+  const matchSnap = await getDoc(doc(db, "matches", matchId));
+  if (!matchSnap.exists()) throw new Error("Partida não encontrada");
+  const match = matchSnap.data() as Match;
+
+  const wasFinished = match.status === "finished" && match.winners.length > 0;
+  const willBeFinished = updates.status === "finished" && updates.winners.length > 0;
+  const oldPts = match.pointValue ?? 1;
+  const newPts = updates.pointValue ?? 1;
+
+  const batch = writeBatch(db);
+
+  // Revert old winners' points
+  if (wasFinished) {
+    for (const uid of match.winners) {
+      const userSnap = await getDoc(doc(db, "users", uid));
+      if (!userSnap.exists()) continue;
+      const u = userSnap.data() as User;
+      batch.update(doc(db, "users", uid), { points: increment(-oldPts), wins: increment(-1) });
+      batch.update(doc(db, "teams", u.team), { points: increment(-oldPts), wins: increment(-1) });
+    }
+  }
+
+  // Apply new winners' points
+  if (willBeFinished) {
+    for (const uid of updates.winners) {
+      const userSnap = await getDoc(doc(db, "users", uid));
+      if (!userSnap.exists()) continue;
+      const u = userSnap.data() as User;
+      batch.update(doc(db, "users", uid), { points: increment(newPts), wins: increment(1) });
+      batch.update(doc(db, "teams", u.team), { points: increment(newPts), wins: increment(1) });
+    }
+  }
+
+  const matchUpdate: Record<string, any> = {
+    gameId: updates.gameId,
+    gameName: updates.gameName,
+    pointValue: updates.pointValue,
+    status: updates.status,
+    players: updates.players,
+    winners: updates.winners,
+  };
+
+  if (updates.status === "active" && !match.startedAt) {
+    matchUpdate.startedAt = serverTimestamp();
+  }
+  if (updates.status === "finished" && !match.finishedAt) {
+    matchUpdate.finishedAt = serverTimestamp();
+  }
+
+  batch.update(doc(db, "matches", matchId), matchUpdate);
   await batch.commit();
 }
 
@@ -197,6 +267,48 @@ export async function getUsersByIds(uids: string[]): Promise<User[]> {
 
 export async function setUserRole(uid: string, role: "user" | "admin"): Promise<void> {
   await updateDoc(doc(db, "users", uid), { role });
+}
+
+export async function updateUserData(
+  uid: string,
+  updates: { team?: string; points?: number }
+): Promise<void> {
+  const userSnap = await getDoc(doc(db, "users", uid));
+  if (!userSnap.exists()) throw new Error("Usuário não encontrado");
+  const user = userSnap.data() as User;
+
+  const oldTeam = user.team;
+  const oldPoints = user.points;
+  const newTeam = updates.team ?? oldTeam;
+  const newPoints = updates.points ?? oldPoints;
+
+  const batch = writeBatch(db);
+
+  if (oldTeam === newTeam) {
+    const delta = newPoints - oldPoints;
+    if (delta !== 0) {
+      batch.update(doc(db, "teams", oldTeam), { points: increment(delta) });
+    }
+  } else {
+    // Transfere os pontos do time antigo para o novo
+    batch.update(doc(db, "teams", oldTeam), {
+      points: increment(-oldPoints),
+      wins: increment(-user.wins),
+      memberCount: increment(-1),
+    });
+    batch.update(doc(db, "teams", newTeam), {
+      points: increment(newPoints),
+      wins: increment(user.wins),
+      memberCount: increment(1),
+    });
+  }
+
+  batch.update(doc(db, "users", uid), { team: newTeam, points: newPoints });
+  await batch.commit();
+}
+
+export async function updateTeamWins(teamId: string, wins: number): Promise<void> {
+  await updateDoc(doc(db, "teams", teamId), { wins });
 }
 
 // ── TEAMS ────────────────────────────────────────────────────────────────────

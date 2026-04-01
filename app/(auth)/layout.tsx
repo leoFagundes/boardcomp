@@ -1,4 +1,8 @@
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen bg-coal-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decoration */}
@@ -11,11 +15,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500 rounded-2xl mb-4 shadow-lg shadow-amber-500/20">
-            <span className="text-3xl">🎲</span>
+          <div className="inline-flex items-center justify-center w-16 h-16  rounded-2xl mb-4 ">
+            <img src="images/logo-circle.png" />
           </div>
-          <h1 className="font-display text-4xl text-gradient tracking-wider">BOARDCOMP</h1>
-          <p className="text-coal-400 text-sm mt-1">Competição de Jogos de Tabuleiro</p>
+          <h1 className="font-display text-4xl text-gradient tracking-wider">
+            TORNEIO CARCASSONNE
+          </h1>
+          <p className="text-coal-400 text-sm mt-1">
+            Competição de Jogos de Tabuleiro
+          </p>
         </div>
         {children}
       </div>
