@@ -315,6 +315,6 @@ export async function updateTeamWins(teamId: string, wins: number): Promise<void
 
 export function subscribeTeams(callback: (teams: TeamDoc[]) => void): Unsubscribe {
   return onSnapshot(collection(db, "teams"), (snap) =>
-    callback(snap.docs.map((d) => d.data() as TeamDoc))
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() } as TeamDoc)))
   );
 }

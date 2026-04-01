@@ -16,6 +16,9 @@ export default function RankingPage() {
   const antigos = teams.find((t) => t.id === "antigos");
   const novos = teams.find((t) => t.id === "novos");
   const totalPoints = (antigos?.points || 0) + (novos?.points || 0);
+
+  const memberCount = (teamId: string) =>
+    users.filter((u) => u.team === teamId).length;
   const antigosPercent =
     totalPoints > 0 ? ((antigos?.points || 0) / totalPoints) * 100 : 50;
 
@@ -105,7 +108,7 @@ export default function RankingPage() {
 
                   <div className="rounded-lg p-2 ">
                     <div className="text-xl sm:text-2xl font-bold text-coal-100">
-                      {team.memberCount}
+                      {memberCount(team.id)}
                     </div>
                     <div className="text-[10px] sm:text-xs text-coal-500">
                       Membros
@@ -121,8 +124,8 @@ export default function RankingPage() {
       {/* Tabs */}
       <div className="flex gap-2 mb-4">
         {[
-          { id: "individual", label: "Individual" },
           { id: "equipes", label: "Por Equipe" },
+          { id: "individual", label: "Individual" },
         ].map((t) => (
           <button
             key={t.id}
@@ -236,7 +239,7 @@ export default function RankingPage() {
                           {team.name}
                         </div>
                         <div className="text-coal-500 text-sm">
-                          {team.memberCount} membros
+                          {memberCount(team.id)} membros
                         </div>
                       </div>
                     </div>
@@ -252,7 +255,7 @@ export default function RankingPage() {
                       Top jogadores
                     </div>
                     <div className="space-y-2">
-                      {teamUsers.slice(0, 5).map((u, idx) => (
+                      {teamUsers.map((u, idx) => (
                         <div
                           key={u.uid}
                           className="flex items-center justify-between text-sm"
