@@ -111,7 +111,19 @@ export async function joinMatch(matchId: string, uid: string): Promise<void> {
   const game = gameSnap.data() as Game;
 
   const newPlayers = [...match.players, uid];
-  const newStatus = newPlayers.length >= game.minPlayers ? "active" : "waiting";
+
+  let newStatus: string = "waiting";
+  if (newPlayers.length >= game.minPlayers) {
+    const playerSnaps = await Promise.all(
+      newPlayers.map((p) => getDoc(doc(db, "users", p)))
+    );
+    const playerTeams = new Set(
+      playerSnaps.filter((s) => s.exists()).map((s) => (s.data() as User).team)
+    );
+    if (playerTeams.has("antigos") && playerTeams.has("novos")) {
+      newStatus = "active";
+    }
+  }
 
   await updateDoc(matchRef, {
     players: arrayUnion(uid),
