@@ -6,6 +6,7 @@ import {
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
+  sendPasswordResetEmail,
   type User as FirebaseUser,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
@@ -76,6 +77,10 @@ export async function getUserData(uid: string): Promise<User | null> {
   const snap = await getDoc(doc(db, "users", uid));
   if (!snap.exists()) return null;
   return snap.data() as User;
+}
+
+export async function resetPassword(email: string): Promise<void> {
+  await sendPasswordResetEmail(auth, email);
 }
 
 export function onAuthChange(callback: (user: FirebaseUser | null) => void) {
