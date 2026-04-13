@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useGames } from "@/lib/hooks/useGames";
+import { useRanking } from "@/lib/hooks/useRanking";
 import { updateGame, deleteGame } from "@/lib/firebase/firestore";
+import { teamColor } from "@/lib/utils/helpers";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { formatDate } from "@/lib/utils/helpers";
@@ -12,6 +14,7 @@ import Loading from "@/components/loading";
 
 export default function AdminJogosPage() {
   const { games, loading } = useGames();
+  const { users: allUsers } = useRanking();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<Game>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -233,7 +236,7 @@ export default function AdminJogosPage() {
                           {game.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-3 mt-2 text-xs text-coal-500">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-coal-500 flex-wrap">
                         <span className="flex items-center gap-1">
                           <Users size={12} /> {game.minPlayers}–
                           {game.maxPlayers} jogadores
@@ -243,6 +246,34 @@ export default function AdminJogosPage() {
                         </span>
                         <span>{formatDate(game.createdAt)}</span>
                       </div>
+                      {(() => {
+                        const interested = allUsers.filter((u) =>
+                          (game.interests ?? []).includes(u.uid)
+                        );
+                        if (interested.length === 0) return null;
+                        return (
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="flex -space-x-1">
+                              {interested.slice(0, 6).map((u) => {
+                                const color = teamColor(u.team);
+                                return (
+                                  <div
+                                    key={u.uid}
+                                    title={u.name}
+                                    className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold border border-coal-900"
+                                    style={{ background: color + "40", color }}
+                                  >
+                                    {u.name.charAt(0)}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <span className="text-coal-500 text-xs">
+                              {interested.length} {interested.length === 1 ? "interessado" : "interessados"}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">

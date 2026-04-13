@@ -3,6 +3,9 @@
 import { useAuth } from "@/context/AuthContext";
 import { useMatches } from "@/lib/hooks/useMatches";
 import { useGames } from "@/lib/hooks/useGames";
+import { useAdmins } from "@/lib/hooks/useAdmins";
+import { useRanking } from "@/lib/hooks/useRanking";
+import GameCard from "@/components/GameCard";
 import Link from "next/link";
 import {
   teamLabel,
@@ -23,6 +26,8 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { matches } = useMatches();
   const { games } = useGames();
+  const admins = useAdmins();
+  const { users: allUsers } = useRanking();
 
   if (!user) return null;
 
@@ -182,6 +187,29 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Games catalog */}
+      {games.length > 0 && (
+        <div className="card p-6 mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-coal-100 flex items-center gap-2">
+              <Gamepad2 size={18} className="text-purple-400" />
+              Jogos Disponíveis
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {games.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                currentUid={user.uid}
+                admins={admins}
+                allUsers={allUsers}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* My recent matches */}
       {myMatches.length > 0 && (

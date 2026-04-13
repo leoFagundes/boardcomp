@@ -5,6 +5,7 @@ import { useMatches } from "@/lib/hooks/useMatches";
 import { useGames } from "@/lib/hooks/useGames";
 import { useAuth } from "@/context/AuthContext";
 import { createMatch, deleteMatch, editMatch, getUsers } from "@/lib/firebase/firestore";
+import { useRanking } from "@/lib/hooks/useRanking";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { formatDate, statusLabel, teamLabel, teamColor } from "@/lib/utils/helpers";
@@ -25,6 +26,7 @@ export default function AdminPartidasPage() {
   const { user } = useAuth();
   const { matches, loading } = useMatches();
   const { games } = useGames();
+  const { users: rankingUsers } = useRanking();
 
   const [showForm, setShowForm] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState("");
@@ -194,17 +196,45 @@ export default function AdminPartidasPage() {
                 ))}
               </select>
             </div>
-            {selectedGame && (
-              <div className="p-3 rounded-lg bg-coal-800 border border-coal-700 text-sm">
-                <div className="font-medium text-coal-200">{selectedGame.name}</div>
-                {selectedGame.description && (
-                  <div className="text-coal-400 mt-1">{selectedGame.description}</div>
-                )}
-                <div className="text-coal-500 mt-1">
-                  {selectedGame.minPlayers}–{selectedGame.maxPlayers} jogadores
+            {selectedGame && (() => {
+              const interested = rankingUsers.filter((u) =>
+                (selectedGame.interests ?? []).includes(u.uid)
+              );
+              return (
+                <div className="p-3 rounded-lg bg-coal-800 border border-coal-700 text-sm space-y-2">
+                  <div className="font-medium text-coal-200">{selectedGame.name}</div>
+                  {selectedGame.description && (
+                    <div className="text-coal-400">{selectedGame.description}</div>
+                  )}
+                  <div className="text-coal-500">
+                    {selectedGame.minPlayers}–{selectedGame.maxPlayers} jogadores
+                    {" · "}
+                    {selectedGame.pointValue ?? 1} pt{(selectedGame.pointValue ?? 1) > 1 ? "s" : ""} por vitória
+                  </div>
+                  {interested.length > 0 && (
+                    <div className="pt-2 border-t border-coal-700">
+                      <div className="text-coal-400 text-xs mb-1.5">
+                        ⭐ {interested.length} {interested.length === 1 ? "pessoa quer" : "pessoas querem"} jogar esse jogo:
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {interested.map((u) => {
+                          const color = teamColor(u.team);
+                          return (
+                            <span
+                              key={u.uid}
+                              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                              style={{ background: color + "20", color }}
+                            >
+                              {u.name.split(" ")[0]}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
             <div className="flex gap-3">
               <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">
                 Cancelar

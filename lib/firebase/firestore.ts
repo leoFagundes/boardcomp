@@ -8,8 +8,10 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
   onSnapshot,
   arrayUnion,
+  arrayRemove,
   increment,
   writeBatch,
   serverTimestamp,
@@ -49,6 +51,12 @@ export async function deleteGame(gameId: string): Promise<void> {
 export async function getGames(): Promise<Game[]> {
   const snap = await getDocs(query(collection(db, "games"), orderBy("createdAt", "desc")));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Game));
+}
+
+export async function toggleGameInterest(gameId: string, uid: string, interested: boolean): Promise<void> {
+  await updateDoc(doc(db, "games", gameId), {
+    interests: interested ? arrayUnion(uid) : arrayRemove(uid),
+  });
 }
 
 export function subscribeGames(callback: (games: Game[]) => void): Unsubscribe {
@@ -275,6 +283,13 @@ export async function getUsersByIds(uids: string[]): Promise<User[]> {
   if (uids.length === 0) return [];
   const snaps = await Promise.all(uids.map((uid) => getDoc(doc(db, "users", uid))));
   return snaps.filter((s) => s.exists()).map((s) => s.data() as User);
+}
+
+export function subscribeAdmins(callback: (admins: User[]) => void): Unsubscribe {
+  return onSnapshot(
+    query(collection(db, "users"), where("role", "==", "admin")),
+    (snap) => callback(snap.docs.map((d) => d.data() as User))
+  );
 }
 
 export async function setUserRole(uid: string, role: "user" | "admin"): Promise<void> {

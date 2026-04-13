@@ -22,6 +22,7 @@ export interface Game {
   minPlayers: number;
   maxPlayers: number;
   pointValue: number;
+  interests?: string[];
   createdBy: string;
   createdAt: Timestamp;
 }
