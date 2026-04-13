@@ -196,7 +196,7 @@ export default function DashboardPage() {
               <Gamepad2 size={18} className="text-purple-400" />
               Jogos Disponíveis
             </h2>
-            <p className="text-coal-500 text-xs mt-1.5 flex items-center gap-1.5">
+            <p className="text-coal-500 text-xs mt-1.5 flex flex-col gap-1.5">
               As partidas só podem ser criadas por um administrador.
               {admins.length > 0 && (
                 <span>
@@ -204,11 +204,14 @@ export default function DashboardPage() {
                   <span className="text-coal-300 font-medium">
                     {admins.length === 1
                       ? admins[0].name.split(" ")[0]
-                      : admins.slice(0, -1).map((a) => a.name.split(" ")[0]).join(", ") +
+                      : admins
+                          .slice(0, -1)
+                          .map((a) => a.name.split(" ")[0])
+                          .join(", ") +
                         " ou " +
                         admins[admins.length - 1].name.split(" ")[0]}
-                  </span>
-                  {" "}para organizar uma!
+                  </span>{" "}
+                  para organizar uma!
                 </span>
               )}
             </p>
