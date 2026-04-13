@@ -3,7 +3,7 @@
 import { toggleGameInterest } from "@/lib/firebase/firestore";
 import { teamColor } from "@/lib/utils/helpers";
 import toast from "react-hot-toast";
-import { Users, Star, Swords } from "lucide-react";
+import { Users, Star } from "lucide-react";
 import type { Game, User } from "@/types";
 
 interface Props {
@@ -65,18 +65,6 @@ export default function GameCard({ game, currentUid, admins, allUsers }: Props) 
         </span>
       </div>
 
-      {/* Admins */}
-      {admins.length > 0 && (
-        <div className="flex items-start gap-1.5 text-xs">
-          <Swords size={11} className="text-coal-500 mt-0.5 shrink-0" />
-          <span className="text-coal-500">
-            Partida criada por:{" "}
-            <span className="text-coal-300">
-              {admins.map((a) => a.name.split(" ")[0]).join(", ")}
-            </span>
-          </span>
-        </div>
-      )}
 
       {/* Interested users */}
       {interestedUsers.length > 0 && (

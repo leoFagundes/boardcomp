@@ -191,11 +191,27 @@ export default function DashboardPage() {
       {/* Games catalog */}
       {games.length > 0 && (
         <div className="card p-6 mt-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <h2 className="font-bold text-coal-100 flex items-center gap-2">
               <Gamepad2 size={18} className="text-purple-400" />
               Jogos Disponíveis
             </h2>
+            <p className="text-coal-500 text-xs mt-1.5 flex items-center gap-1.5">
+              As partidas só podem ser criadas por um administrador.
+              {admins.length > 0 && (
+                <span>
+                  Fale com{" "}
+                  <span className="text-coal-300 font-medium">
+                    {admins.length === 1
+                      ? admins[0].name.split(" ")[0]
+                      : admins.slice(0, -1).map((a) => a.name.split(" ")[0]).join(", ") +
+                        " ou " +
+                        admins[admins.length - 1].name.split(" ")[0]}
+                  </span>
+                  {" "}para organizar uma!
+                </span>
+              )}
+            </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {games.map((game) => (
