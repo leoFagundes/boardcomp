@@ -403,12 +403,12 @@ export default function PerfilPage() {
       {/* Edit profile modal */}
       {editOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/70 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) setEditOpen(false);
           }}
         >
-          <div className="bg-coal-900 border border-coal-700 rounded-2xl w-full max-w-lg shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
+          <div className="bg-coal-900 border border-coal-700 rounded-2xl w-full max-w-lg shadow-2xl animate-slide-up flex flex-col max-h-[80vh]">
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-coal-700 shrink-0">
               <h2 className="font-bold text-coal-100 text-lg">Editar Perfil</h2>
