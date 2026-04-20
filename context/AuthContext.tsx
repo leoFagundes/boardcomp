@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { onAuthChange, loginUser, logoutUser, registerUser, getUserData } from "@/lib/firebase/auth";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { onAuthChange, loginUser, logoutUser, registerUser } from "@/lib/firebase/auth";
+import { onSnapshot, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
 import type { User, AuthContextType, RegisterDTO } from "@/types";
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -9,18 +11,28 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const unsubDocRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    const unsub = onAuthChange(async (firebaseUser) => {
+    const unsubAuth = onAuthChange((firebaseUser) => {
+      if (unsubDocRef.current) {
+        unsubDocRef.current();
+        unsubDocRef.current = null;
+      }
       if (firebaseUser) {
-        const userData = await getUserData(firebaseUser.uid);
-        setUser(userData);
+        unsubDocRef.current = onSnapshot(doc(db, "users", firebaseUser.uid), (snap) => {
+          setUser(snap.exists() ? (snap.data() as User) : null);
+          setLoading(false);
+        });
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
-    return unsub;
+    return () => {
+      unsubAuth();
+      if (unsubDocRef.current) unsubDocRef.current();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -36,11 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  const refreshUser = async () => {
-    if (!user) return;
-    const updated = await getUserData(user.uid);
-    setUser(updated);
-  };
+  const refreshUser = async () => {};
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, refreshUser }}>

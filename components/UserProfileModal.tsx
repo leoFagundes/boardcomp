@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { teamColor, teamLabel, formatDate, statusLabel } from "@/lib/utils/helpers";
 import { X, Trophy, TrendingUp, Gamepad2, ThumbsUp, ThumbsDown } from "lucide-react";
 import type { User, Match } from "@/types";
@@ -28,6 +28,12 @@ export default function UserProfileModal({ user, matches, allUsers, currentUid, 
 
   const [localLikes, setLocalLikes] = useState<string[]>(user.likes ?? []);
   const [localDislikes, setLocalDislikes] = useState<string[]>(user.dislikes ?? []);
+
+  useEffect(() => {
+    setLocalLikes(user.likes ?? []);
+    setLocalDislikes(user.dislikes ?? []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(user.likes), JSON.stringify(user.dislikes)]);
 
   const isSelf = currentUid === user.uid;
   const myReaction = localLikes.includes(currentUid)
