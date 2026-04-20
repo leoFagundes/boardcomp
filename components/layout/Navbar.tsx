@@ -52,7 +52,7 @@ export default function Navbar() {
             <div className="w-10 h-10 rounded-lg flex items-center justify-center text-base overflow-visible">
               <img src="images/logo-circle.png" />
             </div>
-            <span className="font-display text-2xl text-gradient tracking-wider hidden sm:block">
+            <span className="font-display text-2xl  tracking-wider hidden sm:block">
               TORNEIO CARCASSONNE
             </span>
           </Link>
@@ -110,7 +110,10 @@ export default function Navbar() {
                   </span>
                   <span className="text-coal-400 text-xs">pts</span>
                 </div>
-                <UserAvatar user={user} className="w-8 h-8 rounded-full text-xs border border-coal-700" />
+                <UserAvatar
+                  user={user}
+                  className="w-8 h-8 rounded-full text-xs border border-coal-700"
+                />
               </div>
             )}
             <button

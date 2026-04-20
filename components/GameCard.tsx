@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import type { Game, User, Match } from "@/types";
 import UserAvatar from "@/components/UserAvatar";
+import UserProfileModal from "@/components/UserProfileModal";
+import Portal from "@/components/Portal";
 
 interface Props {
   game: Game;
@@ -47,6 +49,7 @@ export default function GameCard({
   matches,
 }: Props) {
   const [showModal, setShowModal] = useState(false);
+  const [profileUser, setProfileUser] = useState<User | null>(null);
 
   const interests = game.interests ?? [];
   const isInterested = interests.includes(currentUid);
@@ -148,141 +151,162 @@ export default function GameCard({
 
       {/* ── Modal ── */}
       {showModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <div className="bg-coal-900 border border-coal-700 rounded-2xl w-full max-w-lg shadow-2xl animate-slide-up flex flex-col max-h-[80vh]">
-            {/* Modal header */}
-            <div className="flex items-start justify-between p-5 border-b border-coal-700 shrink-0">
-              <div>
-                <h2 className="font-bold text-coal-100 text-lg">{game.name}</h2>
-                {game.description && (
-                  <p className="text-coal-400 text-sm mt-1">
-                    {game.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-3 mt-2 text-xs text-coal-500">
-                  <span className="flex items-center gap-1">
-                    <Users size={11} />
-                    {game.minPlayers === game.maxPlayers
-                      ? `${game.minPlayers} jogadores`
-                      : `${game.minPlayers}–${game.maxPlayers} jogadores`}
-                  </span>
-                  <span className="text-amber-400/70 font-medium">
-                    {game.pointValue ?? 1} pt
-                    {(game.pointValue ?? 1) > 1 ? "s" : ""} por vitória
-                  </span>
-                  <span>
-                    {gameMatches.length} partida
-                    {gameMatches.length !== 1 ? "s" : ""}
-                  </span>
+        <Portal>
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowModal(false);
+            }}
+          >
+            <div className="bg-coal-900 border border-coal-700 rounded-2xl w-full max-w-lg shadow-2xl animate-slide-up flex flex-col max-h-[80vh]">
+              {/* Modal header */}
+              <div className="flex items-start justify-between p-5 border-b border-coal-700 shrink-0">
+                <div>
+                  <h2 className="font-bold text-coal-100 text-lg">
+                    {game.name}
+                  </h2>
+                  {game.description && (
+                    <p className="text-coal-400 text-sm mt-1">
+                      {game.description}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3 mt-2 text-xs text-coal-500">
+                    <span className="flex items-center gap-1">
+                      <Users size={11} />
+                      {game.minPlayers === game.maxPlayers
+                        ? `${game.minPlayers} jogadores`
+                        : `${game.minPlayers}–${game.maxPlayers} jogadores`}
+                    </span>
+                    <span className="text-amber-400/70 font-medium">
+                      {game.pointValue ?? 1} pt
+                      {(game.pointValue ?? 1) > 1 ? "s" : ""} por vitória
+                    </span>
+                    <span>
+                      {gameMatches.length} partida
+                      {gameMatches.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <button
-                onClick={() => setShowModal(false)}
-                className="btn-ghost p-2 text-coal-400 hover:text-coal-200 shrink-0"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="overflow-y-auto flex-1 p-5 space-y-5">
-              {/* Interested users */}
-              <div>
-                <h3 className="font-semibold text-coal-200 text-sm mb-3 flex items-center gap-2">
-                  <Star size={14} className="text-amber-400" />
-                  Interessados ({interestedUsers.length})
-                </h3>
-                {interestedUsers.length === 0 ? (
-                  <p className="text-coal-500 text-sm text-center py-4">
-                    Ninguém demonstrou interesse ainda
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {interestedUsers.map((u) => {
-                      const color = teamColor(u.team);
-                      return (
-                        <div key={u.uid} className="flex items-center gap-3">
-                          <UserAvatar
-                            user={u}
-                            className="w-8 h-8 rounded-full text-sm"
-                          />
-                          <div>
-                            <div className="text-coal-100 text-sm font-medium">
-                              {u.name}
-                            </div>
-                            <div className="text-xs" style={{ color }}>
-                              {teamLabel(u.team)}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="btn-ghost p-2 text-coal-400 hover:text-coal-200 shrink-0"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              {/* Match history */}
-              <div>
-                <h3 className="font-semibold text-coal-200 text-sm mb-3 flex items-center gap-2">
-                  <Trophy size={14} className="text-coal-400" />
-                  Histórico de Partidas ({gameMatches.length})
-                </h3>
-                {gameMatches.length === 0 ? (
-                  <p className="text-coal-500 text-sm text-center py-4">
-                    Nenhuma partida realizada ainda
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {gameMatches.map((m) => {
-                      const winners = allUsers.filter((u) =>
-                        m.winners.includes(u.uid),
-                      );
-                      return (
-                        <div
-                          key={m.id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-coal-800 border border-coal-700/50 gap-3"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span
-                              className={`badge-${m.status} flex items-center gap-1 shrink-0`}
-                            >
-                              {statusIcon(m.status)}
-                              {statusLabel(m.status)}
-                            </span>
-                            <span className="text-coal-500 text-xs truncate">
-                              {formatDate(m.createdAt)}
-                            </span>
-                          </div>
-                          <div className="text-right shrink-0">
-                            {winners.length > 0 ? (
-                              <div className="flex items-center gap-1 justify-end">
-                                <Trophy size={11} className="text-amber-400" />
-                                <span className="text-amber-400 text-xs font-medium">
-                                  {winners
-                                    .map((w) => w.name.split(" ")[0])
-                                    .join(", ")}
-                                </span>
+              <div className="overflow-y-auto flex-1 p-5 space-y-5">
+                {/* Interested users */}
+                <div>
+                  <h3 className="font-semibold text-coal-200 text-sm mb-3 flex items-center gap-2">
+                    <Star size={14} className="text-amber-400" />
+                    Interessados ({interestedUsers.length})
+                  </h3>
+                  {interestedUsers.length === 0 ? (
+                    <p className="text-coal-500 text-sm text-center py-4">
+                      Ninguém demonstrou interesse ainda
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {interestedUsers.map((u) => {
+                        const color = teamColor(u.team);
+                        return (
+                          <button
+                            key={u.uid}
+                            onClick={() => setProfileUser(u)}
+                            className="flex items-center gap-3 w-full hover:bg-coal-800 rounded-lg px-2 py-1 -mx-2 transition-all"
+                          >
+                            <UserAvatar
+                              user={u}
+                              className="w-8 h-8 rounded-full text-sm"
+                            />
+                            <div className="text-left">
+                              <div className="text-coal-100 text-sm font-medium">
+                                {u.name}
                               </div>
-                            ) : (
-                              <span className="text-coal-500 text-xs">
-                                {m.players.length} jogador
-                                {m.players.length !== 1 ? "es" : ""}
+                              <div className="text-xs" style={{ color }}>
+                                {teamLabel(u.team)}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Match history */}
+                <div>
+                  <h3 className="font-semibold text-coal-200 text-sm mb-3 flex items-center gap-2">
+                    <Trophy size={14} className="text-coal-400" />
+                    Histórico de Partidas ({gameMatches.length})
+                  </h3>
+                  {gameMatches.length === 0 ? (
+                    <p className="text-coal-500 text-sm text-center py-4">
+                      Nenhuma partida realizada ainda
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {gameMatches.map((m) => {
+                        const winners = allUsers.filter((u) =>
+                          m.winners.includes(u.uid),
+                        );
+                        return (
+                          <div
+                            key={m.id}
+                            className="flex items-center justify-between p-3 rounded-xl bg-coal-800 border border-coal-700/50 gap-3"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span
+                                className={`badge-${m.status} flex items-center gap-1 shrink-0`}
+                              >
+                                {statusIcon(m.status)}
+                                {statusLabel(m.status)}
                               </span>
-                            )}
+                              <span className="text-coal-500 text-xs truncate">
+                                {formatDate(m.createdAt)}
+                              </span>
+                            </div>
+                            <div className="text-right shrink-0">
+                              {winners.length > 0 ? (
+                                <div className="flex items-center gap-1 justify-end">
+                                  <Trophy
+                                    size={11}
+                                    className="text-amber-400"
+                                  />
+                                  <span className="text-amber-400 text-xs font-medium">
+                                    {winners
+                                      .map((w) => w.name.split(" ")[0])
+                                      .join(", ")}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-coal-500 text-xs">
+                                  {m.players.length} jogador
+                                  {m.players.length !== 1 ? "es" : ""}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Portal>
+      )}
+
+      {profileUser && (
+        <UserProfileModal
+          user={profileUser}
+          matches={matches}
+          allUsers={allUsers}
+          currentUid={currentUid}
+          onClose={() => setProfileUser(null)}
+        />
       )}
     </>
   );

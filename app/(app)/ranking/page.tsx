@@ -3,25 +3,34 @@
 import { useState } from "react";
 import { useRanking } from "@/lib/hooks/useRanking";
 import { useAuth } from "@/context/AuthContext";
+import { useMatches } from "@/lib/hooks/useMatches";
 import { teamLabel, teamColor } from "@/lib/utils/helpers";
-import { Trophy, Medal, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
+import UserProfileModal from "@/components/UserProfileModal";
+import type { User } from "@/types";
 
 const medals = ["🥇", "🥈", "🥉"];
 
 export default function RankingPage() {
   const { user } = useAuth();
   const { users, teams, loading } = useRanking();
+  const { matches } = useMatches();
   const [tab, setTab] = useState<"individual" | "equipes">("equipes");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [battleMetric, setBattleMetric] = useState<"points" | "wins">("points");
 
   const antigos = teams.find((t) => t.id === "antigos");
   const novos = teams.find((t) => t.id === "novos");
   const totalPoints = (antigos?.points || 0) + (novos?.points || 0);
+  const totalWins = (antigos?.wins || 0) + (novos?.wins || 0);
 
   const memberCount = (teamId: string) =>
     users.filter((u) => u.team === teamId).length;
-  const antigosPercent =
-    totalPoints > 0 ? ((antigos?.points || 0) / totalPoints) * 100 : 50;
+  const antigosMetricValue = battleMetric === "points" ? (antigos?.points || 0) : (antigos?.wins || 0);
+  const novosMetricValue = battleMetric === "points" ? (novos?.points || 0) : (novos?.wins || 0);
+  const totalMetric = battleMetric === "points" ? totalPoints : totalWins;
+  const antigosPercent = totalMetric > 0 ? (antigosMetricValue / totalMetric) * 100 : 50;
 
   return (
     <div className="animate-fade-in">
@@ -36,24 +45,43 @@ export default function RankingPage() {
 
       {/* Team battle bar */}
       <div className="card p-6 mb-6">
-        <h2 className="font-bold text-coal-100 mb-4 flex items-center gap-2">
-          <Users size={16} className="text-coal-400" />
-          Batalha de Equipes
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold text-coal-100 flex items-center gap-2">
+            <Users size={16} className="text-coal-400" />
+            Batalha de Equipes
+          </h2>
+          <div className="flex gap-1">
+            {(["points", "wins"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setBattleMetric(m)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                  battleMetric === m
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                    : "bg-coal-800 text-coal-400 border border-coal-700 hover:text-coal-200"
+                }`}
+              >
+                {m === "points" ? "Pontos" : "Vitórias"}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex justify-between text-sm mb-3">
           <div>
             <span className="font-bold text-amber-400">
               {antigos?.name || "Brasilberg"}
             </span>
             <span className="text-coal-400 ml-2">
-              {antigos?.points || 0} pts
+              {antigosMetricValue} {battleMetric === "points" ? "pts" : "vit."}
             </span>
           </div>
           <div className="text-right">
             <span className="font-bold text-blue-400">
               {novos?.name || "Hidromel"}
             </span>
-            <span className="text-coal-400 ml-2">{novos?.points || 0} pts</span>
+            <span className="text-coal-400 ml-2">
+              {novosMetricValue} {battleMetric === "points" ? "pts" : "vit."}
+            </span>
           </div>
         </div>
         <div className="h-4 rounded-full overflow-hidden bg-blue-500/30 flex">
@@ -63,13 +91,13 @@ export default function RankingPage() {
           />
         </div>
         <div className="flex justify-between mt-2 text-xs text-coal-500">
-          <span>{antigos?.wins || 0} vitórias</span>
-          <span>{novos?.wins || 0} vitórias</span>
+          <span>{antigos?.wins || 0} vitórias · {antigos?.points || 0} pts</span>
+          <span>{novos?.wins || 0} vitórias · {novos?.points || 0} pts</span>
         </div>
 
         {/* Team cards */}
         <div className="grid grid-cols-2 gap-4 mt-4">
-          {[antigos, novos].map((team, i) => {
+          {[antigos, novos].map((team) => {
             if (!team) return null;
             const color = teamColor(team.id);
             return (
@@ -165,7 +193,8 @@ export default function RankingPage() {
               return (
                 <div
                   key={u.uid}
-                  className={`p-4 grid grid-cols-12 items-center border-b border-coal-700/50 transition-all ${
+                  onClick={() => setSelectedUser(u)}
+                  className={`p-4 grid grid-cols-12 items-center border-b border-coal-700/50 transition-all cursor-pointer ${
                     isMe
                       ? "bg-amber-500/5 border-amber-500/20"
                       : "hover:bg-coal-800/50"
@@ -257,7 +286,8 @@ export default function RankingPage() {
                       {teamUsers.map((u, idx) => (
                         <div
                           key={u.uid}
-                          className="flex items-center justify-between text-sm"
+                          onClick={() => setSelectedUser(u)}
+                          className="flex items-center justify-between text-sm cursor-pointer hover:bg-coal-800/50 rounded-lg px-2 -mx-2 transition-all"
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-coal-500 w-4 text-xs font-mono">
@@ -280,6 +310,15 @@ export default function RankingPage() {
               );
             })}
         </div>
+      )}
+      {selectedUser && (
+        <UserProfileModal
+          user={selectedUser}
+          matches={matches}
+          allUsers={users}
+          currentUid={user?.uid ?? ""}
+          onClose={() => setSelectedUser(null)}
+        />
       )}
     </div>
   );

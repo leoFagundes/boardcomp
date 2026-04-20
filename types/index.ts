@@ -15,6 +15,8 @@ export interface User {
   avatarSeed?: string;
   avatarStyle?: string;
   avatarBg?: string;
+  likes?: string[];
+  dislikes?: string[];
   createdAt: Timestamp;
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useMatches } from "@/lib/hooks/useMatches";
+import { useRanking } from "@/lib/hooks/useRanking";
 import { updateProfile } from "@/lib/firebase/firestore";
 import {
   teamLabel,
@@ -22,7 +23,13 @@ import {
   Pencil,
   X,
   Check,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
+import UserProfileModal from "@/components/UserProfileModal";
+import Portal from "@/components/Portal";
+import type { User } from "@/types";
 
 const AVATAR_SEEDS = [
   "Felix",
@@ -144,9 +151,11 @@ const AVATAR_STYLES = [
 export default function PerfilPage() {
   const { user, signOut, refreshUser } = useAuth();
   const { matches } = useMatches();
+  const { users: allUsers } = useRanking();
   const router = useRouter();
 
   const [editOpen, setEditOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editName, setEditName] = useState("");
   const [editSeed, setEditSeed] = useState<string | null>(null);
   const [editStyle, setEditStyle] = useState("pixel-art");
@@ -393,6 +402,54 @@ export default function PerfilPage() {
         )}
       </div>
 
+      {/* Reactions */}
+      {(() => {
+        const likeUsers = allUsers.filter((u) => (user.likes ?? []).includes(u.uid));
+        const dislikeUsers = allUsers.filter((u) => (user.dislikes ?? []).includes(u.uid));
+        if (likeUsers.length === 0 && dislikeUsers.length === 0) return null;
+        return (
+          <div className="card p-6 mb-6">
+            <h2 className="font-bold text-coal-100 mb-4 flex items-center gap-3">
+              Reações Recebidas
+              <span className="flex items-center gap-1 text-green-400 text-sm font-medium">
+                <ThumbsUp size={14} fill="currentColor" /> {likeUsers.length}
+              </span>
+              <span className="flex items-center gap-1 text-red-400 text-sm font-medium">
+                <ThumbsDown size={14} fill="currentColor" /> {dislikeUsers.length}
+              </span>
+            </h2>
+            <div className="space-y-2">
+              {likeUsers.map((u) => (
+                <button
+                  key={u.uid}
+                  onClick={() => setSelectedUser(u)}
+                  className="flex items-center gap-3 w-full hover:bg-coal-800 rounded-lg px-2 py-1.5 -mx-2 transition-all"
+                >
+                  <UserAvatar user={u} className="w-7 h-7 rounded-full text-xs shrink-0" />
+                  <span className="flex-1 text-left text-coal-200 text-sm">{u.name}</span>
+                  <span className="text-green-400 text-xs flex items-center gap-1">
+                    <ThumbsUp size={11} fill="currentColor" /> curtiu
+                  </span>
+                </button>
+              ))}
+              {dislikeUsers.map((u) => (
+                <button
+                  key={u.uid}
+                  onClick={() => setSelectedUser(u)}
+                  className="flex items-center gap-3 w-full hover:bg-coal-800 rounded-lg px-2 py-1.5 -mx-2 transition-all"
+                >
+                  <UserAvatar user={u} className="w-7 h-7 rounded-full text-xs shrink-0" />
+                  <span className="flex-1 text-left text-coal-200 text-sm">{u.name}</span>
+                  <span className="text-red-400 text-xs flex items-center gap-1">
+                    <ThumbsDown size={11} fill="currentColor" /> não curtiu
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       <button
         onClick={handleSignOut}
         className="btn-secondary w-full flex items-center justify-center gap-2 text-red-400 border-red-400/20 hover:border-red-400/40"
@@ -402,8 +459,9 @@ export default function PerfilPage() {
 
       {/* Edit profile modal */}
       {editOpen && (
+        <Portal>
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) setEditOpen(false);
           }}
@@ -537,6 +595,17 @@ export default function PerfilPage() {
             </div>
           </div>
         </div>
+        </Portal>
+      )}
+
+      {selectedUser && (
+        <UserProfileModal
+          user={selectedUser}
+          matches={matches}
+          allUsers={allUsers}
+          currentUid={user.uid}
+          onClose={() => setSelectedUser(null)}
+        />
       )}
     </div>
   );

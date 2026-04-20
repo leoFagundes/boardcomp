@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUsers, setUserRole, updateUserData } from "@/lib/firebase/firestore";
+import {
+  getUsers,
+  setUserRole,
+  updateUserData,
+} from "@/lib/firebase/firestore";
 import { teamLabel, teamColor } from "@/lib/utils/helpers";
 import toast from "react-hot-toast";
 import type { User, Team } from "@/types";
-import { ShieldCheck, ShieldOff, Pencil, Check, X, AlertTriangle } from "lucide-react";
+import {
+  ShieldCheck,
+  ShieldOff,
+  Pencil,
+  Check,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 
 interface EditForm {
@@ -23,7 +34,10 @@ export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUid, setEditingUid] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<EditForm>({ team: "antigos", points: "" });
+  const [editForm, setEditForm] = useState<EditForm>({
+    team: "antigos",
+    points: "",
+  });
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<PendingChange | null>(null);
 
@@ -78,7 +92,10 @@ export default function AdminUsuariosPage() {
     if (!pending) return;
     setSaving(true);
     try {
-      await updateUserData(pending.user.uid, { team: pending.newTeam, points: pending.newPoints });
+      await updateUserData(pending.user.uid, {
+        team: pending.newTeam,
+        points: pending.newPoints,
+      });
       toast.success(`${pending.user.name} atualizado`);
       setPending(null);
       setEditingUid(null);
@@ -101,8 +118,12 @@ export default function AdminUsuariosPage() {
                 <AlertTriangle size={20} className="text-amber-400" />
               </div>
               <div>
-                <h2 className="font-semibold text-coal-100 text-base">Confirmar alteração</h2>
-                <p className="text-coal-400 text-xs mt-0.5">{pending.user.name}</p>
+                <h2 className="font-semibold text-coal-100 text-base">
+                  Confirmar alteração
+                </h2>
+                <p className="text-coal-400 text-xs mt-0.5">
+                  {pending.user.name}
+                </p>
               </div>
             </div>
 
@@ -111,9 +132,13 @@ export default function AdminUsuariosPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-coal-400">Equipe</span>
                   <div className="flex items-center gap-2">
-                    <span style={{ color: teamColor(pending.user.team) }}>{teamLabel(pending.user.team)}</span>
+                    <span style={{ color: teamColor(pending.user.team) }}>
+                      {teamLabel(pending.user.team)}
+                    </span>
                     <span className="text-coal-600">→</span>
-                    <span style={{ color: teamColor(pending.newTeam) }}>{teamLabel(pending.newTeam)}</span>
+                    <span style={{ color: teamColor(pending.newTeam) }}>
+                      {teamLabel(pending.newTeam)}
+                    </span>
                   </div>
                 </div>
               )}
@@ -121,9 +146,13 @@ export default function AdminUsuariosPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-coal-400">Pontos</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-coal-200">{pending.user.points} pts</span>
+                    <span className="text-coal-200">
+                      {pending.user.points} pts
+                    </span>
                     <span className="text-coal-600">→</span>
-                    <span className="text-coal-100 font-bold">{pending.newPoints} pts</span>
+                    <span className="text-coal-100 font-bold">
+                      {pending.newPoints} pts
+                    </span>
                   </div>
                 </div>
               )}
@@ -186,7 +215,10 @@ export default function AdminUsuariosPage() {
                 {/* ── Desktop row ── */}
                 <div className="hidden sm:grid p-4 grid-cols-12 items-center hover:bg-coal-800/50">
                   <div className="col-span-4 flex items-center gap-3">
-                    <UserAvatar user={u} className="w-9 h-9 rounded-full text-sm" />
+                    <UserAvatar
+                      user={u}
+                      className="w-9 h-9 rounded-full text-sm"
+                    />
                     <div className="min-w-0">
                       <div className="font-medium text-coal-100 text-sm truncate">
                         {u.name}
@@ -210,7 +242,10 @@ export default function AdminUsuariosPage() {
                       <select
                         value={editForm.team}
                         onChange={(e) =>
-                          setEditForm((f) => ({ ...f, team: e.target.value as Team }))
+                          setEditForm((f) => ({
+                            ...f,
+                            team: e.target.value as Team,
+                          }))
                         }
                         className="bg-coal-700 border border-coal-600 text-coal-100 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-coal-400"
                       >
@@ -238,14 +273,16 @@ export default function AdminUsuariosPage() {
                       />
                     ) : (
                       <>
-                        <span className="font-bold text-coal-100">{u.points}</span>
+                        <span className="font-bold text-coal-100">
+                          {u.points}
+                        </span>
                         <span className="text-coal-500 text-xs ml-1">pts</span>
                       </>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="col-span-3 flex justify-end gap-1.5">
+                  <div className="col-span-3 flex justify-center gap-1.5">
                     {isEditing ? (
                       <>
                         <button
@@ -297,7 +334,10 @@ export default function AdminUsuariosPage() {
                 {/* ── Mobile card ── */}
                 <div className="sm:hidden p-4">
                   <div className="flex items-center gap-3">
-                    <UserAvatar user={u} className="w-10 h-10 rounded-full text-sm" />
+                    <UserAvatar
+                      user={u}
+                      className="w-10 h-10 rounded-full text-sm"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-medium text-coal-100 text-sm">
@@ -325,7 +365,9 @@ export default function AdminUsuariosPage() {
                       </div>
                       <div className="flex gap-1">
                         <button
-                          onClick={() => isEditing ? cancelEdit() : startEdit(u)}
+                          onClick={() =>
+                            isEditing ? cancelEdit() : startEdit(u)
+                          }
                           className={`text-xs px-2 py-1 rounded-lg border transition-all flex items-center gap-1 ${
                             isEditing
                               ? "text-coal-400 border-coal-600 hover:bg-coal-700"
@@ -357,11 +399,16 @@ export default function AdminUsuariosPage() {
                     <div className="mt-3 pt-3 border-t border-coal-700 flex flex-col gap-2">
                       <div className="flex gap-2">
                         <div className="flex-1">
-                          <label className="text-coal-500 text-xs mb-1 block">Equipe</label>
+                          <label className="text-coal-500 text-xs mb-1 block">
+                            Equipe
+                          </label>
                           <select
                             value={editForm.team}
                             onChange={(e) =>
-                              setEditForm((f) => ({ ...f, team: e.target.value as Team }))
+                              setEditForm((f) => ({
+                                ...f,
+                                team: e.target.value as Team,
+                              }))
                             }
                             className="w-full bg-coal-700 border border-coal-600 text-coal-100 text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-coal-400"
                           >
@@ -370,13 +417,18 @@ export default function AdminUsuariosPage() {
                           </select>
                         </div>
                         <div className="w-24">
-                          <label className="text-coal-500 text-xs mb-1 block">Pontos</label>
+                          <label className="text-coal-500 text-xs mb-1 block">
+                            Pontos
+                          </label>
                           <input
                             type="number"
                             min={0}
                             value={editForm.points}
                             onChange={(e) =>
-                              setEditForm((f) => ({ ...f, points: e.target.value }))
+                              setEditForm((f) => ({
+                                ...f,
+                                points: e.target.value,
+                              }))
                             }
                             className="w-full bg-coal-700 border border-coal-600 text-coal-100 text-sm rounded-lg px-2 py-1.5 text-center focus:outline-none focus:border-coal-400"
                           />

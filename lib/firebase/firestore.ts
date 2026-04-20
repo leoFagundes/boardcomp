@@ -296,6 +296,21 @@ export async function setUserRole(uid: string, role: "user" | "admin"): Promise<
   await updateDoc(doc(db, "users", uid), { role });
 }
 
+export async function toggleReaction(
+  targetUid: string,
+  fromUid: string,
+  type: "like" | "dislike",
+  add: boolean
+): Promise<void> {
+  const opposite = type === "like" ? "dislikes" : "likes";
+  const field = type === "like" ? "likes" : "dislikes";
+  const updates: Record<string, any> = {
+    [field]: add ? arrayUnion(fromUid) : arrayRemove(fromUid),
+  };
+  if (add) updates[opposite] = arrayRemove(fromUid);
+  await updateDoc(doc(db, "users", targetUid), updates);
+}
+
 export async function updateProfile(
   uid: string,
   updates: { name?: string; avatarSeed?: string; avatarStyle?: string; avatarBg?: string }
@@ -343,6 +358,10 @@ export async function updateUserData(
 
 export async function updateTeamWins(teamId: string, wins: number): Promise<void> {
   await updateDoc(doc(db, "teams", teamId), { wins });
+}
+
+export async function updateTeamPoints(teamId: string, points: number): Promise<void> {
+  await updateDoc(doc(db, "teams", teamId), { points });
 }
 
 // ── TEAMS ────────────────────────────────────────────────────────────────────

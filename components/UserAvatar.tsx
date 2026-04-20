@@ -8,6 +8,7 @@ interface Props {
     team: string;
     avatarSeed?: string;
     avatarStyle?: string;
+    avatarBg?: string;
   };
   className?: string;
 }
@@ -18,7 +19,7 @@ export default function UserAvatar({ user, className = "" }: Props) {
   if (user.avatarSeed) {
     return (
       <img
-        src={dicebearUrl(user.avatarSeed, user.avatarStyle)}
+        src={dicebearUrl(user.avatarSeed, user.avatarStyle, user.avatarBg || undefined)}
         alt={user.name}
         className={`shrink-0 ${className}`}
       />
