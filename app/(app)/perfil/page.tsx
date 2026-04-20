@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useMatches } from "@/lib/hooks/useMatches";
 import { updateProfile } from "@/lib/firebase/firestore";
@@ -106,21 +106,21 @@ const AVATAR_SEEDS = [
 ];
 
 const BG_COLORS: { value: string | null; label: string }[] = [
-  { value: null,     label: "Auto"    },
-  { value: "b6e3f4", label: "Azul"   },
-  { value: "c0aede", label: "Lilás"  },
+  { value: null, label: "Auto" },
+  { value: "b6e3f4", label: "Azul" },
+  { value: "c0aede", label: "Lilás" },
   { value: "d1d4f9", label: "Índigo" },
-  { value: "ffd5dc", label: "Rosa"   },
-  { value: "ffdfbf", label: "Pêssego"},
-  { value: "b5ead7", label: "Menta"  },
-  { value: "ffeaa7", label: "Limão"  },
-  { value: "f0e6ff", label: "Violeta"},
-  { value: "fce4ec", label: "Coral"  },
-  { value: "e0f7fa", label: "Ciano"  },
-  { value: "fff9c4", label: "Creme"  },
-  { value: "e8f5e9", label: "Verde"  },
-  { value: "f3e5f5", label: "Uva"    },
-  { value: "ffe0b2", label: "Laranja"},
+  { value: "ffd5dc", label: "Rosa" },
+  { value: "ffdfbf", label: "Pêssego" },
+  { value: "b5ead7", label: "Menta" },
+  { value: "ffeaa7", label: "Limão" },
+  { value: "f0e6ff", label: "Violeta" },
+  { value: "fce4ec", label: "Coral" },
+  { value: "e0f7fa", label: "Ciano" },
+  { value: "fff9c4", label: "Creme" },
+  { value: "e8f5e9", label: "Verde" },
+  { value: "f3e5f5", label: "Uva" },
+  { value: "ffe0b2", label: "Laranja" },
   { value: "fafafa", label: "Branco" },
 ];
 
@@ -152,8 +152,31 @@ export default function PerfilPage() {
   const [editStyle, setEditStyle] = useState("pixel-art");
   const [editBg, setEditBg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   if (!user) return null;
+
+  useEffect(() => {
+    setVisibleCount(10); // reinicia do zero
+  }, [editStyle, editBg]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    setVisibleCount(10);
+
+    interval = setInterval(() => {
+      setVisibleCount((prev) => {
+        if (prev >= AVATAR_SEEDS.length) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 5;
+      });
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [editStyle, editBg]);
 
   const myMatches = matches.filter((m) => m.players.includes(user.uid));
   const myWins = myMatches.filter((m) => m.winners.includes(user.uid));
@@ -177,6 +200,13 @@ export default function PerfilPage() {
     setEditOpen(true);
   };
 
+  useEffect(() => {
+    AVATAR_SEEDS.slice(0, 10).forEach((seed) => {
+      const img = new Image();
+      img.src = dicebearUrl(seed, editStyle, editBg ?? undefined);
+    });
+  }, [editStyle, editBg]);
+
   const handleSave = async () => {
     const trimmed = editName.trim();
     if (!trimmed) {
@@ -197,8 +227,7 @@ export default function PerfilPage() {
       if (editSeed && editStyle !== (user.avatarStyle ?? "pixel-art"))
         updates.avatarStyle = editStyle;
       if (!editSeed) updates.avatarStyle = "";
-      if (editBg !== (user.avatarBg ?? null))
-        updates.avatarBg = editBg ?? "";
+      if (editBg !== (user.avatarBg ?? null)) updates.avatarBg = editBg ?? "";
       if (Object.keys(updates).length > 0) {
         await updateProfile(user.uid, updates);
         await refreshUser();
@@ -464,7 +493,7 @@ export default function PerfilPage() {
                     <span style={{ color: tc }}>{user.name.charAt(0)}</span>
                   </button>
 
-                  {AVATAR_SEEDS.map((seed) => (
+                  {AVATAR_SEEDS.slice(0, visibleCount).map((seed) => (
                     <button
                       key={seed}
                       onClick={() => setEditSeed(seed)}
