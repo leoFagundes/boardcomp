@@ -149,12 +149,12 @@ export default function GameCard({
       {/* ── Modal ── */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/70 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
         >
-          <div className="bg-coal-900 border border-coal-700 rounded-2xl w-full max-w-lg shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
+          <div className="bg-coal-900 border border-coal-700 rounded-2xl w-full max-w-lg shadow-2xl animate-slide-up flex flex-col max-h-[80vh]">
             {/* Modal header */}
             <div className="flex items-start justify-between p-5 border-b border-coal-700 shrink-0">
               <div>
