@@ -3,7 +3,12 @@
 import { teamColor, dicebearUrl } from "@/lib/utils/helpers";
 
 interface Props {
-  user: { name: string; team: string; avatarSeed?: string; avatarStyle?: string };
+  user: {
+    name: string;
+    team: string;
+    avatarSeed?: string;
+    avatarStyle?: string;
+  };
   className?: string;
 }
 
@@ -13,7 +18,7 @@ export default function UserAvatar({ user, className = "" }: Props) {
   if (user.avatarSeed) {
     return (
       <img
-        src={dicebearUrl(user.avatarSeed, user.avatarStyle || "pixel-art", user.avatarBg)}
+        src={dicebearUrl(user.avatarSeed, user.avatarStyle)}
         alt={user.name}
         className={`shrink-0 ${className}`}
       />
