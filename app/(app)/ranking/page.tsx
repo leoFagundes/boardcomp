@@ -5,6 +5,7 @@ import { useRanking } from "@/lib/hooks/useRanking";
 import { useAuth } from "@/context/AuthContext";
 import { teamLabel, teamColor } from "@/lib/utils/helpers";
 import { Trophy, Medal, Users } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 
 const medals = ["🥇", "🥈", "🥉"];
 
@@ -180,12 +181,10 @@ export default function RankingPage() {
                     )}
                   </span>
                   <div className="col-span-6 flex items-center gap-3">
-                    <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
-                      style={{ background: color + "30", color }}
-                    >
-                      {u.name.charAt(0)}
-                    </div>
+                    <UserAvatar
+                      user={u}
+                      className="w-9 h-9 rounded-full text-sm"
+                    />
                     <div>
                       <div
                         className={`font-semibold text-sm ${isMe ? "text-amber-400" : "text-coal-100"}`}
@@ -264,6 +263,10 @@ export default function RankingPage() {
                             <span className="text-coal-500 w-4 text-xs font-mono">
                               {idx + 1}
                             </span>
+                            <UserAvatar
+                              user={u}
+                              className="w-8 h-8 rounded-full text-sm"
+                            />
                             <span className="text-coal-200">{u.name}</span>
                           </div>
                           <span className="font-semibold" style={{ color }}>

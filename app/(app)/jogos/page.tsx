@@ -11,7 +11,15 @@ import GameCard from "@/components/GameCard";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { formatDate, statusLabel } from "@/lib/utils/helpers";
-import { Users, Clock, Swords, CheckCircle, Plus, Gamepad2 } from "lucide-react";
+import {
+  Users,
+  Clock,
+  Swords,
+  CheckCircle,
+  Plus,
+  Gamepad2,
+  Search,
+} from "lucide-react";
 import type { MatchStatus } from "@/types";
 import Loading from "@/components/loading";
 
@@ -30,6 +38,7 @@ export default function JogosPage() {
   const { users: allUsers } = useRanking();
   const [tab, setTab] = useState<"partidas" | "catalogo">("partidas");
   const [filter, setFilter] = useState<MatchStatus | "all">("all");
+  const [gameSearch, setGameSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   if (!user) return null;
@@ -119,23 +128,47 @@ export default function JogosPage() {
 
       {/* Catálogo de jogos */}
       {tab === "catalogo" && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {games.map((game) => (
-            <GameCard
-              key={game.id}
-              game={game}
-              currentUid={user!.uid}
-              admins={admins}
-              allUsers={allUsers}
+        <>
+          <div className="relative mb-4">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-coal-500 pointer-events-none"
             />
-          ))}
-          {games.length === 0 && (
-            <div className="col-span-full text-center py-20">
-              <Gamepad2 size={40} className="text-coal-700 mx-auto mb-4" />
-              <p className="text-coal-400">Nenhum jogo cadastrado ainda</p>
-            </div>
-          )}
-        </div>
+            <input
+              type="text"
+              placeholder="Pesquisar jogo..."
+              value={gameSearch}
+              onChange={(e) => setGameSearch(e.target.value)}
+              className="input !pl-8 py-2 text-sm"
+            />
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...games]
+              .filter((g) =>
+                g.name.toLowerCase().includes(gameSearch.toLowerCase()),
+              )
+              .sort(
+                (a, b) =>
+                  (b.interests?.length ?? 0) - (a.interests?.length ?? 0),
+              )
+              .map((game) => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  currentUid={user!.uid}
+                  admins={admins}
+                  allUsers={allUsers}
+                  matches={matches}
+                />
+              ))}
+            {games.length === 0 && (
+              <div className="col-span-full text-center py-20">
+                <Gamepad2 size={40} className="text-coal-700 mx-auto mb-4" />
+                <p className="text-coal-400">Nenhum jogo cadastrado ainda</p>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Partidas */}
@@ -189,7 +222,9 @@ export default function JogosPage() {
                         >
                           {match.gameName}
                         </Link>
-                        <span className={`badge-${match.status} flex items-center gap-1`}>
+                        <span
+                          className={`badge-${match.status} flex items-center gap-1`}
+                        >
                           {statusIcon(match.status)}
                           {statusLabel(match.status)}
                         </span>
@@ -206,14 +241,18 @@ export default function JogosPage() {
                         </span>
                         <span>{formatDate(match.createdAt)}</span>
                       </div>
-                      {match.status === "finished" && match.winners.length > 0 && (
-                        <div className="mt-2 flex items-center gap-1.5 text-sm text-amber-400">
-                          🏆 <span>{match.winners.length} vencedor(es)</span>
-                        </div>
-                      )}
+                      {match.status === "finished" &&
+                        match.winners.length > 0 && (
+                          <div className="mt-2 flex items-center gap-1.5 text-sm text-amber-400">
+                            🏆 <span>{match.winners.length} vencedor(es)</span>
+                          </div>
+                        )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Link href={`/jogos/${match.id}`} className="btn-secondary text-sm">
+                      <Link
+                        href={`/jogos/${match.id}`}
+                        className="btn-secondary text-sm"
+                      >
                         Detalhes
                       </Link>
                       {match.status !== "finished" &&

@@ -296,6 +296,13 @@ export async function setUserRole(uid: string, role: "user" | "admin"): Promise<
   await updateDoc(doc(db, "users", uid), { role });
 }
 
+export async function updateProfile(
+  uid: string,
+  updates: { name?: string; avatarSeed?: string; avatarStyle?: string; avatarBg?: string }
+): Promise<void> {
+  await updateDoc(doc(db, "users", uid), updates);
+}
+
 export async function updateUserData(
   uid: string,
   updates: { team?: string; points?: number }

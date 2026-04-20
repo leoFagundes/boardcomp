@@ -10,6 +10,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { formatDate, statusLabel, teamLabel, teamColor } from "@/lib/utils/helpers";
 import { Plus, Users, X, Trash2, Trophy, History, Pencil, Check } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 import type { Match, User, MatchStatus } from "@/types";
 import Loading from "@/components/loading";
 
@@ -344,12 +345,7 @@ export default function AdminPartidasPage() {
                             onChange={() => togglePlayer(u.uid)}
                             className="w-4 h-4 accent-emerald-500 shrink-0"
                           />
-                          <div
-                            className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
-                            style={{ background: color + "30", color }}
-                          >
-                            {u.name.charAt(0)}
-                          </div>
+                          <UserAvatar user={u} className="w-7 h-7 rounded-full text-xs" />
                           <span className="text-coal-200 text-sm flex-1">{u.name}</span>
                           <span className="text-xs" style={{ color }}>{teamLabel(u.team)}</span>
                         </label>
@@ -383,12 +379,7 @@ export default function AdminPartidasPage() {
                               onChange={() => toggleWinner(u.uid)}
                               className="w-4 h-4 accent-amber-500 shrink-0"
                             />
-                            <div
-                              className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
-                              style={{ background: color + "30", color }}
-                            >
-                              {u.name.charAt(0)}
-                            </div>
+                            <UserAvatar user={u} className="w-7 h-7 rounded-full text-xs" />
                             <span className="text-coal-200 text-sm flex-1">{u.name}</span>
                             {isWinner && (
                               <span className="text-amber-400 text-xs font-medium">

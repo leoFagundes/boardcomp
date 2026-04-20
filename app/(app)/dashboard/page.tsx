@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useMatches } from "@/lib/hooks/useMatches";
 import { useGames } from "@/lib/hooks/useGames";
@@ -20,6 +21,7 @@ import {
   TrendingUp,
   ArrowRight,
   Clock,
+  Search,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -28,6 +30,7 @@ export default function DashboardPage() {
   const { games } = useGames();
   const admins = useAdmins();
   const { users: allUsers } = useRanking();
+  const [gameSearch, setGameSearch] = useState("");
 
   if (!user) return null;
 
@@ -216,14 +219,28 @@ export default function DashboardPage() {
               )}
             </p>
           </div>
+          <div className="relative mb-4">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-coal-500 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Pesquisar jogo..."
+              value={gameSearch}
+              onChange={(e) => setGameSearch(e.target.value)}
+              className="input !pl-8 py-2 text-sm"
+            />
+          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {games.map((game) => (
+            {[...games]
+              .filter((g) => g.name.toLowerCase().includes(gameSearch.toLowerCase()))
+              .sort((a, b) => (b.interests?.length ?? 0) - (a.interests?.length ?? 0))
+              .map((game) => (
               <GameCard
                 key={game.id}
                 game={game}
                 currentUid={user.uid}
                 admins={admins}
                 allUsers={allUsers}
+                matches={matches}
               />
             ))}
           </div>

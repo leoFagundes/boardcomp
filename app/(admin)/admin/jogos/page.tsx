@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/utils/helpers";
 import { Plus, Users, Gamepad2, Pencil, Trash2, X, Check } from "lucide-react";
 import type { Game } from "@/types";
 import Loading from "@/components/loading";
+import UserAvatar from "@/components/UserAvatar";
 
 export default function AdminJogosPage() {
   const { games, loading } = useGames();
@@ -254,19 +255,13 @@ export default function AdminJogosPage() {
                         return (
                           <div className="flex items-center gap-2 mt-2">
                             <div className="flex -space-x-1">
-                              {interested.slice(0, 6).map((u) => {
-                                const color = teamColor(u.team);
-                                return (
-                                  <div
-                                    key={u.uid}
-                                    title={u.name}
-                                    className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold border border-coal-900"
-                                    style={{ background: color + "40", color }}
-                                  >
-                                    {u.name.charAt(0)}
-                                  </div>
-                                );
-                              })}
+                              {interested.slice(0, 6).map((u) => (
+                                <UserAvatar
+                                  key={u.uid}
+                                  user={u}
+                                  className="w-5 h-5 rounded-full text-[9px] border border-coal-900"
+                                />
+                              ))}
                             </div>
                             <span className="text-coal-500 text-xs">
                               {interested.length} {interested.length === 1 ? "interessado" : "interessados"}

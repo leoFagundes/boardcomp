@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { teamColor, teamLabel } from "@/lib/utils/helpers";
+import UserAvatar from "@/components/UserAvatar";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils/helpers";
 import {
@@ -109,6 +110,7 @@ export default function Navbar() {
                   </span>
                   <span className="text-coal-400 text-xs">pts</span>
                 </div>
+                <UserAvatar user={user} className="w-8 h-8 rounded-full text-xs border border-coal-700" />
               </div>
             )}
             <button

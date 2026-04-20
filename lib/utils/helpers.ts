@@ -34,6 +34,13 @@ export function statusLabel(status: string): string {
   return map[status] || status;
 }
 
+export function dicebearUrl(seed: string, style = "pixel-art", bg?: string): string {
+  const bgParam = bg
+    ? `backgroundColor=${bg.replace("#", "")}`
+    : "backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf";
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}&${bgParam}`;
+}
+
 export function statusColor(status: string): string {
   const map: Record<string, string> = {
     waiting: "#F59E0B",

@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import type { User } from "@/types";
 import { ArrowLeft, Users, Trophy, Clock, Swords } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 
 export default function MatchDetailPage({
   params,
@@ -199,9 +200,7 @@ export default function MatchDetailPage({
           <div className="space-y-2">
             {winners.map((w) => (
               <div key={w.uid} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-sm">
-                  {w.name.charAt(0)}
-                </div>
+                <UserAvatar user={w} className="w-8 h-8 rounded-full text-sm" />
                 <div>
                   <div className="font-medium text-coal-100">{w.name}</div>
                   <div className="text-xs" style={{ color: teamColor(w.team) }}>
@@ -236,15 +235,7 @@ export default function MatchDetailPage({
                   key={p.uid}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-coal-800 transition-all"
                 >
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
-                    style={{
-                      background: teamColor(p.team) + "30",
-                      color: teamColor(p.team),
-                    }}
-                  >
-                    {p.name.charAt(0)}
-                  </div>
+                  <UserAvatar user={p} className="w-9 h-9 rounded-full text-sm" />
                   <div className="flex-1">
                     <div className="font-medium text-coal-100 text-sm">
                       {p.name}
@@ -296,15 +287,7 @@ export default function MatchDetailPage({
                       onChange={() => toggleWinner(p.uid)}
                       className="w-4 h-4 accent-amber-500"
                     />
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
-                      style={{
-                        background: teamColor(p.team) + "30",
-                        color: teamColor(p.team),
-                      }}
-                    >
-                      {p.name.charAt(0)}
-                    </div>
+                    <UserAvatar user={p} className="w-8 h-8 rounded-full text-sm" />
                     <span className="text-coal-100 text-sm font-medium">
                       {p.name}
                     </span>

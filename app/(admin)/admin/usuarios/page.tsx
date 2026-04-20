@@ -6,6 +6,7 @@ import { teamLabel, teamColor } from "@/lib/utils/helpers";
 import toast from "react-hot-toast";
 import type { User, Team } from "@/types";
 import { ShieldCheck, ShieldOff, Pencil, Check, X, AlertTriangle } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 
 interface EditForm {
   team: Team;
@@ -185,12 +186,7 @@ export default function AdminUsuariosPage() {
                 {/* ── Desktop row ── */}
                 <div className="hidden sm:grid p-4 grid-cols-12 items-center hover:bg-coal-800/50">
                   <div className="col-span-4 flex items-center gap-3">
-                    <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
-                      style={{ background: color + "30", color }}
-                    >
-                      {u.name.charAt(0)}
-                    </div>
+                    <UserAvatar user={u} className="w-9 h-9 rounded-full text-sm" />
                     <div className="min-w-0">
                       <div className="font-medium text-coal-100 text-sm truncate">
                         {u.name}
@@ -301,12 +297,7 @@ export default function AdminUsuariosPage() {
                 {/* ── Mobile card ── */}
                 <div className="sm:hidden p-4">
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0"
-                      style={{ background: color + "30", color }}
-                    >
-                      {u.name.charAt(0)}
-                    </div>
+                    <UserAvatar user={u} className="w-10 h-10 rounded-full text-sm" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-medium text-coal-100 text-sm">
