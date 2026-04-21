@@ -79,6 +79,13 @@ export interface FinalizeMatchDTO {
   winnerIds: string[];
 }
 
+export interface Comment {
+  id: string;
+  uid: string;
+  text: string;
+  createdAt: Timestamp;
+}
+
 export interface RankedUser extends User {
   rank: number;
 }

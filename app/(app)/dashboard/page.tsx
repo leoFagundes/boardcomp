@@ -7,6 +7,7 @@ import { useGames } from "@/lib/hooks/useGames";
 import { useAdmins } from "@/lib/hooks/useAdmins";
 import { useRanking } from "@/lib/hooks/useRanking";
 import GameCard from "@/components/GameCard";
+import UserAvatar from "@/components/UserAvatar";
 import Link from "next/link";
 import {
   teamLabel,
@@ -22,7 +23,9 @@ import {
   ArrowRight,
   Clock,
   Search,
+  Activity,
 } from "lucide-react";
+import type { Match } from "@/types";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -36,6 +39,26 @@ export default function DashboardPage() {
 
   const myMatches = matches.filter((m) => m.players.includes(user.uid));
   const myWins = myMatches.filter((m) => m.winners.includes(user.uid));
+
+  type FeedEvent = {
+    key: string;
+    type: "finished" | "started" | "created";
+    match: Match;
+    seconds: number;
+  };
+  const feedEvents: FeedEvent[] = matches
+    .flatMap((m): FeedEvent[] => {
+      const evts: FeedEvent[] = [];
+      if (m.status === "finished" && m.finishedAt)
+        evts.push({ key: m.id + "-f", type: "finished", match: m, seconds: m.finishedAt.seconds });
+      if (m.startedAt)
+        evts.push({ key: m.id + "-s", type: "started", match: m, seconds: m.startedAt.seconds });
+      evts.push({ key: m.id + "-c", type: "created", match: m, seconds: m.createdAt.seconds });
+      return evts;
+    })
+    .sort((a, b) => b.seconds - a.seconds)
+    .slice(0, 20);
+
   const waitingMatches = matches
     .filter((m) => m.status === "waiting")
     .slice(0, 3);
@@ -278,12 +301,86 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     {m.status === "finished" && won && (
                       <span className="text-amber-400 text-xs font-bold">
-                        +1 pt
+                        +{m.pointValue ?? 1} pt
                       </span>
                     )}
                     <span className={`badge-${m.status}`}>
                       {statusLabel(m.status)}
                     </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Activity feed */}
+      {feedEvents.length > 0 && (
+        <div className="card p-6 mt-6">
+          <h2 className="font-bold text-coal-100 mb-5 flex items-center gap-2">
+            <Activity size={18} className="text-amber-400" />
+            Feed de Atividades
+          </h2>
+          <div className="space-y-1">
+            {feedEvents.map((evt) => {
+              const m = evt.match;
+              const winnerUsers = m.winners
+                .map((uid) => allUsers.find((u) => u.uid === uid))
+                .filter(Boolean) as typeof allUsers;
+              return (
+                <Link
+                  key={evt.key}
+                  href={`/jogos/${m.id}`}
+                  className="flex items-start gap-3 py-3 px-2 rounded-lg hover:bg-coal-800 transition-all group"
+                >
+                  <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-base ${
+                    evt.type === "finished"
+                      ? "bg-amber-500/15"
+                      : evt.type === "started"
+                      ? "bg-emerald-500/15"
+                      : "bg-coal-700"
+                  }`}>
+                    {evt.type === "finished" ? "🏆" : evt.type === "started" ? "⚔️" : "🎲"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {evt.type === "finished" && winnerUsers.length > 0 ? (
+                      <>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <div className="flex -space-x-1">
+                            {winnerUsers.slice(0, 3).map((w) => (
+                              <UserAvatar key={w.uid} user={w} className="w-5 h-5 rounded-full text-[9px] border border-coal-900" />
+                            ))}
+                          </div>
+                          <span className="text-coal-200 text-sm">
+                            <span className="font-semibold text-amber-400">
+                              {winnerUsers.map((w) => w.name.split(" ")[0]).join(", ")}
+                            </span>{" "}
+                            {winnerUsers.length === 1 ? "venceu" : "venceram"}{" "}
+                            <span className="font-medium">{m.gameName}</span>
+                          </span>
+                          <span className="text-amber-400 text-xs font-bold">
+                            +{m.pointValue ?? 1} pts
+                          </span>
+                        </div>
+                      </>
+                    ) : evt.type === "started" ? (
+                      <span className="text-coal-200 text-sm">
+                        Partida de <span className="font-medium">{m.gameName}</span>{" "}
+                        <span className="text-emerald-400">começou</span>
+                      </span>
+                    ) : (
+                      <span className="text-coal-200 text-sm">
+                        Nova partida de <span className="font-medium">{m.gameName}</span> criada
+                      </span>
+                    )}
+                    <div className="text-coal-500 text-xs mt-0.5">
+                      {formatDate(
+                        evt.type === "finished" ? m.finishedAt! :
+                        evt.type === "started" ? m.startedAt! :
+                        m.createdAt
+                      )}
+                    </div>
                   </div>
                 </Link>
               );

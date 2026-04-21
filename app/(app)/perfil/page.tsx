@@ -388,7 +388,7 @@ export default function PerfilPage() {
                   <div className="flex items-center gap-2">
                     {m.status === "finished" && won && (
                       <span className="text-amber-400 text-xs font-bold">
-                        +1 pt
+                        +{m.pointValue ?? 1} pt
                       </span>
                     )}
                     <span className={`badge-${m.status} text-xs`}>
@@ -401,6 +401,55 @@ export default function PerfilPage() {
           </div>
         )}
       </div>
+
+      {/* Points history */}
+      {(() => {
+        const wonMatches = myWins
+          .filter((m) => m.finishedAt)
+          .sort((a, b) => (b.finishedAt!.seconds ?? 0) - (a.finishedAt!.seconds ?? 0));
+        if (wonMatches.length === 0) return null;
+
+        let running = user.points;
+        const entries = wonMatches.map((m) => {
+          const pts = m.pointValue ?? 1;
+          const totalAfter = running;
+          running -= pts;
+          return { match: m, pts, totalAfter };
+        });
+
+        return (
+          <div className="card p-6 mb-6">
+            <h2 className="font-bold text-coal-100 mb-4 flex items-center gap-2">
+              <Trophy size={16} className="text-amber-400" />
+              Histórico de Pontos
+              <span className="ml-auto text-amber-400 font-bold text-sm">
+                {user.points} pts total
+              </span>
+            </h2>
+            <div className="space-y-1">
+              {entries.map(({ match: m, pts, totalAfter }) => (
+                <Link
+                  key={m.id}
+                  href={`/jogos/${m.id}`}
+                  className="flex items-center justify-between p-2.5 rounded-lg hover:bg-coal-800 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-base">🏆</span>
+                    <div>
+                      <div className="font-medium text-coal-100 text-sm">{m.gameName}</div>
+                      <div className="text-coal-500 text-xs">{formatDate(m.finishedAt!)}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-amber-400 text-sm font-bold">+{pts} pt</div>
+                    <div className="text-coal-500 text-xs">{totalAfter} total</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Reactions */}
       {(() => {

@@ -24,6 +24,7 @@ import type {
   Match,
   User,
   TeamDoc,
+  Comment,
   CreateGameDTO,
   CreateMatchDTO,
   FinalizeMatchDTO,
@@ -150,7 +151,24 @@ export async function leaveMatch(matchId: string, uid: string): Promise<void> {
   if (match.status === "finished") throw new Error("Não é possível sair de uma partida já finalizada");
 
   const newPlayers = match.players.filter((p) => p !== uid);
-  await updateDoc(matchRef, { players: newPlayers });
+
+  let newStatus = match.status;
+  if (match.status === "active") {
+    const playerSnaps = await Promise.all(
+      newPlayers.map((p) => getDoc(doc(db, "users", p)))
+    );
+    const playerTeams = new Set(
+      playerSnaps.filter((s) => s.exists()).map((s) => (s.data() as User).team)
+    );
+    if (!playerTeams.has("antigos") || !playerTeams.has("novos")) {
+      newStatus = "waiting";
+    }
+  }
+
+  await updateDoc(matchRef, {
+    players: newPlayers,
+    status: newStatus,
+  });
 }
 
 export async function finalizeMatch(dto: FinalizeMatchDTO): Promise<void> {
@@ -362,6 +380,31 @@ export async function updateTeamWins(teamId: string, wins: number): Promise<void
 
 export async function updateTeamPoints(teamId: string, points: number): Promise<void> {
   await updateDoc(doc(db, "teams", teamId), { points });
+}
+
+// ── COMMENTS ─────────────────────────────────────────────────────────────────
+
+export async function addComment(matchId: string, uid: string, text: string): Promise<void> {
+  await addDoc(collection(db, "matches", matchId, "comments"), {
+    uid,
+    text: text.trim(),
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function deleteComment(matchId: string, commentId: string): Promise<void> {
+  await deleteDoc(doc(db, "matches", matchId, "comments", commentId));
+}
+
+export async function updateComment(matchId: string, commentId: string, text: string): Promise<void> {
+  await updateDoc(doc(db, "matches", matchId, "comments", commentId), { text: text.trim() });
+}
+
+export function subscribeComments(matchId: string, callback: (comments: Comment[]) => void): Unsubscribe {
+  return onSnapshot(
+    query(collection(db, "matches", matchId, "comments"), orderBy("createdAt", "asc")),
+    (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Comment)))
+  );
 }
 
 // ── TEAMS ────────────────────────────────────────────────────────────────────

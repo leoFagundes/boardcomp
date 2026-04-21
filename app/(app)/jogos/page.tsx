@@ -8,6 +8,7 @@ import { useAdmins } from "@/lib/hooks/useAdmins";
 import { useRanking } from "@/lib/hooks/useRanking";
 import { joinMatch, leaveMatch } from "@/lib/firebase/firestore";
 import GameCard from "@/components/GameCard";
+import UserAvatar from "@/components/UserAvatar";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { formatDate, statusLabel } from "@/lib/utils/helpers";
@@ -241,12 +242,28 @@ export default function JogosPage() {
                         </span>
                         <span>{formatDate(match.createdAt)}</span>
                       </div>
-                      {match.status === "finished" &&
-                        match.winners.length > 0 && (
-                          <div className="mt-2 flex items-center gap-1.5 text-sm text-amber-400">
-                            🏆 <span>{match.winners.length} vencedor(es)</span>
+                      {match.status === "finished" && match.winners.length > 0 && (() => {
+                        const winnerUsers = match.winners
+                          .map((uid) => allUsers.find((u) => u.uid === uid))
+                          .filter(Boolean) as typeof allUsers;
+                        return (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-base">🏆</span>
+                            <div className="flex -space-x-1.5">
+                              {winnerUsers.slice(0, 4).map((w) => (
+                                <UserAvatar
+                                  key={w.uid}
+                                  user={w}
+                                  className="w-6 h-6 rounded-full text-[10px] border border-coal-900"
+                                />
+                              ))}
+                            </div>
+                            <span className="text-amber-400 text-sm font-medium">
+                              {winnerUsers.map((w) => w.name.split(" ")[0]).join(", ")}
+                            </span>
                           </div>
-                        )}
+                        );
+                      })()}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <Link
