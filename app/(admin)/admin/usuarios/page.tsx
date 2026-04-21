@@ -22,12 +22,14 @@ import UserAvatar from "@/components/UserAvatar";
 interface EditForm {
   team: Team;
   points: string;
+  wins: string;
 }
 
 interface PendingChange {
   user: User;
   newTeam: Team;
   newPoints: number;
+  newWins: number;
 }
 
 export default function AdminUsuariosPage() {
@@ -37,6 +39,7 @@ export default function AdminUsuariosPage() {
   const [editForm, setEditForm] = useState<EditForm>({
     team: "antigos",
     points: "",
+    wins: "",
   });
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<PendingChange | null>(null);
@@ -66,7 +69,7 @@ export default function AdminUsuariosPage() {
 
   const startEdit = (user: User) => {
     setEditingUid(user.uid);
-    setEditForm({ team: user.team, points: String(user.points) });
+    setEditForm({ team: user.team, points: String(user.points), wins: String(user.wins) });
   };
 
   const cancelEdit = () => {
@@ -75,17 +78,23 @@ export default function AdminUsuariosPage() {
 
   const handleSaveEdit = (user: User) => {
     const newPoints = parseInt(editForm.points, 10);
+    const newWins = parseInt(editForm.wins, 10);
     if (isNaN(newPoints) || newPoints < 0) {
       toast.error("Pontuação inválida");
       return;
     }
+    if (isNaN(newWins) || newWins < 0) {
+      toast.error("Vitórias inválidas");
+      return;
+    }
     const teamChanged = editForm.team !== user.team;
     const pointsChanged = newPoints !== user.points;
-    if (!teamChanged && !pointsChanged) {
+    const winsChanged = newWins !== user.wins;
+    if (!teamChanged && !pointsChanged && !winsChanged) {
       setEditingUid(null);
       return;
     }
-    setPending({ user, newTeam: editForm.team, newPoints });
+    setPending({ user, newTeam: editForm.team, newPoints, newWins });
   };
 
   const confirmSave = async () => {
@@ -95,6 +104,7 @@ export default function AdminUsuariosPage() {
       await updateUserData(pending.user.uid, {
         team: pending.newTeam,
         points: pending.newPoints,
+        wins: pending.newWins,
       });
       toast.success(`${pending.user.name} atualizado`);
       setPending(null);
@@ -146,13 +156,19 @@ export default function AdminUsuariosPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-coal-400">Pontos</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-coal-200">
-                      {pending.user.points} pts
-                    </span>
+                    <span className="text-coal-200">{pending.user.points} pts</span>
                     <span className="text-coal-600">→</span>
-                    <span className="text-coal-100 font-bold">
-                      {pending.newPoints} pts
-                    </span>
+                    <span className="text-coal-100 font-bold">{pending.newPoints} pts</span>
+                  </div>
+                </div>
+              )}
+              {pending.newWins !== pending.user.wins && (
+                <div className="flex items-center justify-between">
+                  <span className="text-coal-400">Vitórias</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-coal-200">{pending.user.wins} vit.</span>
+                    <span className="text-coal-600">→</span>
+                    <span className="text-coal-100 font-bold">{pending.newWins} vit.</span>
                   </div>
                 </div>
               )}
@@ -198,8 +214,9 @@ export default function AdminUsuariosPage() {
           {/* Desktop header */}
           <div className="hidden sm:grid p-4 border-b border-coal-700 grid-cols-12 text-xs text-coal-500 font-semibold uppercase tracking-wider">
             <span className="col-span-4">Usuário</span>
-            <span className="col-span-3">Equipe</span>
+            <span className="col-span-2">Equipe</span>
             <span className="col-span-2 text-center">Pontos</span>
+            <span className="col-span-1 text-center">Vit.</span>
             <span className="col-span-3 text-right">Ações</span>
           </div>
 
@@ -213,7 +230,7 @@ export default function AdminUsuariosPage() {
                 className="border-b border-coal-700/50 transition-all"
               >
                 {/* ── Desktop row ── */}
-                <div className="hidden sm:grid p-4 grid-cols-12 items-center hover:bg-coal-800/50">
+                <div className="hidden sm:grid p-4 grid-cols-12 items-center hover:bg-coal-800/50 gap-1">
                   <div className="col-span-4 flex items-center gap-3">
                     <UserAvatar
                       user={u}
@@ -237,7 +254,7 @@ export default function AdminUsuariosPage() {
                   </div>
 
                   {/* Team */}
-                  <div className="col-span-3">
+                  <div className="col-span-2">
                     {isEditing ? (
                       <select
                         value={editForm.team}
@@ -269,15 +286,30 @@ export default function AdminUsuariosPage() {
                         onChange={(e) =>
                           setEditForm((f) => ({ ...f, points: e.target.value }))
                         }
-                        className="w-16 bg-coal-700 border border-coal-600 text-coal-100 text-xs rounded-lg px-2 py-1 text-center focus:outline-none focus:border-coal-400"
+                        className="w-14 bg-coal-700 border border-coal-600 text-coal-100 text-xs rounded-lg px-2 py-1 text-center focus:outline-none focus:border-coal-400"
                       />
                     ) : (
                       <>
-                        <span className="font-bold text-coal-100">
-                          {u.points}
-                        </span>
+                        <span className="font-bold text-coal-100">{u.points}</span>
                         <span className="text-coal-500 text-xs ml-1">pts</span>
                       </>
+                    )}
+                  </div>
+
+                  {/* Wins */}
+                  <div className="col-span-1 text-center">
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        min={0}
+                        value={editForm.wins}
+                        onChange={(e) =>
+                          setEditForm((f) => ({ ...f, wins: e.target.value }))
+                        }
+                        className="w-12 bg-coal-700 border border-coal-600 text-coal-100 text-xs rounded-lg px-2 py-1 text-center focus:outline-none focus:border-coal-400"
+                      />
+                    ) : (
+                      <span className="font-bold text-coal-100">{u.wins}</span>
                     )}
                   </div>
 
@@ -416,20 +448,23 @@ export default function AdminUsuariosPage() {
                             <option value="novos">Hidromel</option>
                           </select>
                         </div>
-                        <div className="w-24">
-                          <label className="text-coal-500 text-xs mb-1 block">
-                            Pontos
-                          </label>
+                        <div className="w-20">
+                          <label className="text-coal-500 text-xs mb-1 block">Pontos</label>
                           <input
                             type="number"
                             min={0}
                             value={editForm.points}
-                            onChange={(e) =>
-                              setEditForm((f) => ({
-                                ...f,
-                                points: e.target.value,
-                              }))
-                            }
+                            onChange={(e) => setEditForm((f) => ({ ...f, points: e.target.value }))}
+                            className="w-full bg-coal-700 border border-coal-600 text-coal-100 text-sm rounded-lg px-2 py-1.5 text-center focus:outline-none focus:border-coal-400"
+                          />
+                        </div>
+                        <div className="w-20">
+                          <label className="text-coal-500 text-xs mb-1 block">Vitórias</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={editForm.wins}
+                            onChange={(e) => setEditForm((f) => ({ ...f, wins: e.target.value }))}
                             className="w-full bg-coal-700 border border-coal-600 text-coal-100 text-sm rounded-lg px-2 py-1.5 text-center focus:outline-none focus:border-coal-400"
                           />
                         </div>

@@ -338,7 +338,7 @@ export async function updateProfile(
 
 export async function updateUserData(
   uid: string,
-  updates: { team?: string; points?: number }
+  updates: { team?: string; points?: number; wins?: number }
 ): Promise<void> {
   const userSnap = await getDoc(doc(db, "users", uid));
   if (!userSnap.exists()) throw new Error("Usuário não encontrado");
@@ -346,31 +346,36 @@ export async function updateUserData(
 
   const oldTeam = user.team;
   const oldPoints = user.points;
+  const oldWins = user.wins;
   const newTeam = updates.team ?? oldTeam;
   const newPoints = updates.points ?? oldPoints;
+  const newWins = updates.wins ?? oldWins;
 
   const batch = writeBatch(db);
 
   if (oldTeam === newTeam) {
-    const delta = newPoints - oldPoints;
-    if (delta !== 0) {
-      batch.update(doc(db, "teams", oldTeam), { points: increment(delta) });
+    const teamUpdate: Record<string, any> = {};
+    const pointsDelta = newPoints - oldPoints;
+    const winsDelta = newWins - oldWins;
+    if (pointsDelta !== 0) teamUpdate.points = increment(pointsDelta);
+    if (winsDelta !== 0) teamUpdate.wins = increment(winsDelta);
+    if (Object.keys(teamUpdate).length > 0) {
+      batch.update(doc(db, "teams", oldTeam), teamUpdate);
     }
   } else {
-    // Transfere os pontos do time antigo para o novo
     batch.update(doc(db, "teams", oldTeam), {
       points: increment(-oldPoints),
-      wins: increment(-user.wins),
+      wins: increment(-oldWins),
       memberCount: increment(-1),
     });
     batch.update(doc(db, "teams", newTeam), {
       points: increment(newPoints),
-      wins: increment(user.wins),
+      wins: increment(newWins),
       memberCount: increment(1),
     });
   }
 
-  batch.update(doc(db, "users", uid), { team: newTeam, points: newPoints });
+  batch.update(doc(db, "users", uid), { team: newTeam, points: newPoints, wins: newWins });
   await batch.commit();
 }
 
